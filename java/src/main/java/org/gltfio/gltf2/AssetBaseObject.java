@@ -17,6 +17,7 @@ import org.gltfio.lib.ErrorMessage;
 import org.gltfio.lib.FileUtils;
 import org.gltfio.lib.Logger;
 import org.gltfio.lib.Settings;
+import org.gltfio.prepare.GltfSettings.Alignment;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -148,10 +149,10 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
      * Camera will have a Node
      * 
      */
-    public void addRuntimeCamera(RenderableScene scene, MinMax bounds, String name) {
+    public void addRuntimeCamera(RenderableScene scene, MinMax bounds, Alignment align, String name) {
         // Setup a default projection
         JSONNode<?> node = createNode(name, -1);
-        selectedCamera = createCamera(name, bounds, scene, node);
+        selectedCamera = createCamera(name, bounds, align, scene, node);
         JSONCamera camera = getCamera(selectedCamera);
         node.setRuntimeCamera(camera);
         addInstanceCamera(camera);
@@ -164,7 +165,7 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
      * @param scene
      * @return Camera
      */
-    public int createCamera(String name, MinMax bounds, RenderableScene scene, JSONNode node) {
+    public int createCamera(String name, MinMax bounds, Alignment align, RenderableScene scene, JSONNode node) {
         // Human vision is around 120 degrees horizontally and 180 degrees vertically.
         // Depending on what part of the vision is considered.
         float yFOV = 1.0f;
@@ -174,14 +175,27 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
         float centerX = (-result[0] / 2) - bounds.min[0];
         float centerY = (-result[1] / 2) - bounds.min[1];
         float centerZ = (-result[2] / 2) - bounds.min[2];
+        switch (align) {
+            case BOTTOM:
+                centerY -= result[1] / 2;
+                break;
+            case CENTER:
+                break;
+            case TOP:
+                centerY += result[1] / 2;
+                break;
+            default:
+                throw new IllegalArgumentException(align.name());
+        }
 
         float b = (result[1] / 2) / (float) Math.tan(yFOV / 2);
-        // TODO - use proper aspect
+        // TODO - use proper aspect?
+        // Probably not since we start with a given screensize.
         float bx = (result[0] / 2) / (float) Math.tan(yFOV * 1.777f / 2);
 
         float distance = Math.max(b, bx) + result[2] / 2;
         Float nearValue = Settings.getInstance().getFloat(LaddaFloatProperties.CAMERA_NEAR);
-        float near = nearValue != null ? nearValue : distance / 10;
+        float near = nearValue != null ? nearValue : 0.1f;
         Perspective p = new Perspective(Constants.NO_VALUE, yFOV, distance * 4, near);
         JSONCamera camera = new JSONCamera(p, node);
         int cameraIndex = addCamera(camera);

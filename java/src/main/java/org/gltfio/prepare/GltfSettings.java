@@ -2,6 +2,30 @@ package org.gltfio.prepare;
 
 public class GltfSettings {
 
+    public enum Alignment {
+        TOP(1),
+        BOTTOM(2),
+        CENTER(3);
+
+        public int value;
+
+        Alignment(int value) {
+            this.value = value;
+        }
+
+        public static Alignment get(String alignment) {
+            if (alignment != null) {
+                for (Alignment a : values()) {
+                    if (a.name().contentEquals(alignment)) {
+                        return a;
+                    }
+                }
+            }
+            return null;
+        }
+
+    }
+
     /**
      * If not null then vertex buffers (for glTF Attributes) with default values shall be added if not present in
      * primitive. For instance if POSITION values are not present a default buffer with 1,1,1,1 shall be added.
@@ -16,14 +40,27 @@ public class GltfSettings {
 
     private ModelPreparation.CreateTangents createTangents;
 
+    private Alignment cameraAlignment = Alignment.CENTER;
+
     public GltfSettings(ModelPreparation.DefaultVertexBuffers defaultVertexBuffers,
             ModelPreparation.IndexedToShort indexedToShort) {
         this.defaultVertexBuffers = defaultVertexBuffers;
         this.indexedToShort = indexedToShort;
     }
 
-    public GltfSettings() {
+    public GltfSettings(Alignment cameraAlignment) {
+        if (cameraAlignment != null) {
+            this.cameraAlignment = cameraAlignment;
+        }
+    }
 
+    /**
+     * Returns the camera alignment
+     * 
+     * @return
+     */
+    public Alignment getCameraAlignment() {
+        return cameraAlignment;
     }
 
     /**

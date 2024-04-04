@@ -19,6 +19,7 @@ import org.gltfio.gltf2.extensions.KHRMaterialsIOR;
 import org.gltfio.gltf2.extensions.KHRMaterialsTransmission;
 import org.gltfio.gltf2.stream.PrimitiveStream.IndexType;
 import org.gltfio.lib.Transform;
+import org.gltfio.prepare.GltfSettings.Alignment;
 
 public class VanillaCreatorCallback implements CreatorCallback {
 
@@ -98,7 +99,7 @@ public class VanillaCreatorCallback implements CreatorCallback {
         KHRLightsPunctual.setNodeRotation(lightNode, new float[] { 0, 0, 10000 });
         creator.addLight(sceneIndex, lightIndex, Light.Type.directional, new float[] { 1, 1f, 0f, }, 600);
         MinMax bounds = new MinMax(new float[] { -1.5f, -1.5f, 0 }, new float[] { 1.5f, 1.5f, 0 });
-        int nodeIndex = creator.addCamera("Usecase Camera", bounds, sceneIndex);
+        int nodeIndex = creator.addCamera("Usecase Camera", bounds, Alignment.CENTER, sceneIndex);
         JSONNode cameraNode = creator.getNode(nodeIndex);
         float[] position = cameraNode.getTransform().getTranslate();
         position[2] = position[2] * 2;

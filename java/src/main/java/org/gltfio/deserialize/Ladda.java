@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-import org.gltfio.GltfAssetCreator;
 import org.gltfio.glb.GlbReader;
 import org.gltfio.glb2.Glb2Reader;
 import org.gltfio.glb2.Glb2Reader.Glb2Streamer;
@@ -289,7 +288,7 @@ public class Ladda {
                 JSONScene scene = (JSONScene) asset.getScene(0);
                 MinMax bounds = scene.calculateBounds();
                 if (bounds != null) {
-                    asset.addRuntimeCamera(scene, bounds, "Default camera");
+                    asset.addRuntimeCamera(scene, bounds, settings.getCameraAlignment(), "Default camera");
                 }
                 break;
             case GLXF:
@@ -297,28 +296,6 @@ public class Ladda {
                 break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + ft);
-        }
-        return asset;
-    }
-
-    /**
-     * Creates a glTF asset using the asset creator, resolves the asset and returns it.
-     * 
-     * @param assetCreator
-     * @param modelPrep
-     * @param settings
-     * @return
-     * @throws IOException
-     */
-    public AssetBaseObject createGltf(GltfAssetCreator assetCreator, ModelPreparation modelPrep,
-            GltfSettings settings) {
-        JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> asset = assetCreator.createAsset();
-        checkProperties(asset);
-        asset.resolveExtensions();
-        JSONScene scene = asset.getScene(0);
-        MinMax bounds = scene.calculateBounds();
-        if (bounds != null) {
-            asset.addRuntimeCamera(scene, bounds, "Default camera");
         }
         return asset;
     }

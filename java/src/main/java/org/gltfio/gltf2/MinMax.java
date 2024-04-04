@@ -95,6 +95,33 @@ public class MinMax {
     }
 
     /**
+     * Returns the min Y value
+     * 
+     * @return
+     */
+    public float getMinY() {
+        return min[1];
+    }
+
+    /**
+     * Returns the min X value
+     * 
+     * @return
+     */
+    public float getMinX() {
+        return min[0];
+    }
+
+    /**
+     * Returns the max X value
+     * 
+     * @return
+     */
+    public float getMaxX() {
+        return max[0];
+    }
+
+    /**
      * Returns the max, x, y and z value
      * 
      * @param result, result array. If null a new result array is created with size 3

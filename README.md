@@ -1,7 +1,7 @@
 # gltf-io  
 
-Copyright Rickard Sahlin
-This project is licensed under the terms of the MIT license.
+Copyright Rickard Sahlin  
+This project is licensed under the terms of the MIT license.  
 
 A Java based serializer/deserializer and memory model for glTF  
 

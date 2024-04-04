@@ -427,7 +427,7 @@ public class JSONCamera extends NamedValue {
         if (projectionMatrix == null) {
             createProjectionMatrix();
         }
-        MatrixUtils.mul4(premultiply, projectionMatrix, destination, offset);
+        MatrixUtils.mul4(premultiply, 0, projectionMatrix, 0, destination, offset);
         return destination;
     }
 

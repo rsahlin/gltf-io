@@ -51,7 +51,11 @@ public enum LaddaProperties implements StringProperty {
     /**
      * Force pbr samplers to use mag filter;
      */
-    PBR_MAGFILTER("gltf.pbr_magfilter", null);
+    PBR_MAGFILTER("gltf.pbr_magfilter", null),
+    /**
+     * Runtime camera alignment
+     */
+    CAMERA_ALIGNMENT("gltf.camera.alignment", null);
 
     private final String key;
     private final String defaultValue;

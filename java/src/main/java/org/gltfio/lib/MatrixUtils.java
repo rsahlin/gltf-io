@@ -171,7 +171,7 @@ public abstract class MatrixUtils extends VecMath {
      */
     public static final void mul4(float[] m1, float[] m2, float[] destination) {
         // Concatenate matrix 1 with matrix 2, 4*4
-        mul4(m1, m2, destination, 0);
+        mul4(m1, 0, m2, 0, destination, 0);
     }
 
     /**
@@ -180,29 +180,46 @@ public abstract class MatrixUtils extends VecMath {
      * @param m1
      * @param m2
      * @param destination
-     * @param offset offset into destination where result is stored
+     * @param destOffset offset into destination where result is stored
      */
-    public static final void mul4(float[] m1, float[] m2, float[] destination, int offset) {
+    public static final void mul4(float[] m1, int m1Offset, float[] m2, int m2Offset, float[] destination,
+            int destOffset) {
         // Concatenate matrix 1 with matrix 2, 4*4
-        destination[offset + 0] = (m1[0] * m2[0] + m1[1] * m2[4] + m1[2] * m2[8] + m1[3] * m2[12]);
-        destination[offset + 1] = (m1[0] * m2[1] + m1[1] * m2[5] + m1[2] * m2[9] + m1[3] * m2[13]);
-        destination[offset + 2] = (m1[0] * m2[2] + m1[1] * m2[6] + m1[2] * m2[10] + m1[3] * m2[14]);
-        destination[offset + 3] = (m1[0] * m2[3] + m1[1] * m2[7] + m1[2] * m2[11] + m1[3] * m2[15]);
+        destination[destOffset + 0] = (m1[m1Offset + 0] * m2[m2Offset + 0] + m1[m1Offset + 1] * m2[m2Offset + 4]
+                + m1[m1Offset + 2] * m2[m2Offset + 8] + m1[m1Offset + 3] * m2[m2Offset + 12]);
+        destination[destOffset + 1] = (m1[m1Offset + 0] * m2[m2Offset + 1] + m1[m1Offset + 1] * m2[m2Offset + 5]
+                + m1[m1Offset + 2] * m2[m2Offset + 9] + m1[m1Offset + 3] * m2[m2Offset + 13]);
+        destination[destOffset + 2] = (m1[m1Offset + 0] * m2[m2Offset + 2] + m1[m1Offset + 1] * m2[m2Offset + 6]
+                + m1[m1Offset + 2] * m2[m2Offset + 10] + m1[m1Offset + 3] * m2[m2Offset + 14]);
+        destination[destOffset + 3] = (m1[m1Offset + 0] * m2[m2Offset + 3] + m1[m1Offset + 1] * m2[m2Offset + 7]
+                + m1[m1Offset + 2] * m2[m2Offset + 11] + m1[m1Offset + 3] * m2[m2Offset + 15]);
 
-        destination[offset + 4] = (m1[4] * m2[0] + m1[5] * m2[4] + m1[6] * m2[8] + m1[7] * m2[12]);
-        destination[offset + 5] = (m1[4] * m2[1] + m1[5] * m2[5] + m1[6] * m2[9] + m1[7] * m2[13]);
-        destination[offset + 6] = (m1[4] * m2[2] + m1[5] * m2[6] + m1[6] * m2[10] + m1[7] * m2[14]);
-        destination[offset + 7] = (m1[4] * m2[3] + m1[5] * m2[7] + m1[6] * m2[11] + m1[7] * m2[15]);
+        destination[destOffset + 4] = (m1[m1Offset + 4] * m2[m2Offset + 0] + m1[m1Offset + 5] * m2[m2Offset + 4]
+                + m1[m1Offset + 6] * m2[m2Offset + 8] + m1[m1Offset + 7] * m2[m2Offset + 12]);
+        destination[destOffset + 5] = (m1[m1Offset + 4] * m2[m2Offset + 1] + m1[m1Offset + 5] * m2[m2Offset + 5]
+                + m1[m1Offset + 6] * m2[m2Offset + 9] + m1[m1Offset + 7] * m2[m2Offset + 13]);
+        destination[destOffset + 6] = (m1[m1Offset + 4] * m2[m2Offset + 2] + m1[m1Offset + 5] * m2[m2Offset + 6]
+                + m1[m1Offset + 6] * m2[m2Offset + 10] + m1[m1Offset + 7] * m2[m2Offset + 14]);
+        destination[destOffset + 7] = (m1[m1Offset + 4] * m2[m2Offset + 3] + m1[m1Offset + 5] * m2[m2Offset + 7]
+                + m1[m1Offset + 6] * m2[m2Offset + 11] + m1[m1Offset + 7] * m2[m2Offset + 15]);
 
-        destination[offset + 8] = (m1[8] * m2[0] + m1[9] * m2[4] + m1[10] * m2[8] + m1[11] * m2[12]);
-        destination[offset + 9] = (m1[8] * m2[1] + m1[9] * m2[5] + m1[10] * m2[9] + m1[11] * m2[13]);
-        destination[offset + 10] = (m1[8] * m2[2] + m1[9] * m2[6] + m1[10] * m2[10] + m1[11] * m2[14]);
-        destination[offset + 11] = (m1[8] * m2[3] + m1[9] * m2[7] + m1[10] * m2[11] + m1[11] * m2[15]);
+        destination[destOffset + 8] = (m1[m1Offset + 8] * m2[m2Offset + 0] + m1[m1Offset + 9] * m2[m2Offset + 4]
+                + m1[m1Offset + 10] * m2[m2Offset + 8] + m1[m1Offset + 11] * m2[m2Offset + 12]);
+        destination[destOffset + 9] = (m1[m1Offset + 8] * m2[m2Offset + 1] + m1[m1Offset + 9] * m2[m2Offset + 5]
+                + m1[m1Offset + 10] * m2[m2Offset + 9] + m1[m1Offset + 11] * m2[m2Offset + 13]);
+        destination[destOffset + 10] = (m1[m1Offset + 8] * m2[m2Offset + 2] + m1[m1Offset + 9] * m2[m2Offset + 6]
+                + m1[m1Offset + 10] * m2[m2Offset + 10] + m1[m1Offset + 11] * m2[m2Offset + 14]);
+        destination[destOffset + 11] = (m1[m1Offset + 8] * m2[m2Offset + 3] + m1[m1Offset + 9] * m2[m2Offset + 7]
+                + m1[m1Offset + 10] * m2[m2Offset + 11] + m1[m1Offset + 11] * m2[m2Offset + 15]);
 
-        destination[offset + 12] = (m1[12] * m2[0] + m1[13] * m2[4] + m1[14] * m2[8] + m1[15] * m2[12]);
-        destination[offset + 13] = (m1[12] * m2[1] + m1[13] * m2[5] + m1[14] * m2[9] + m1[15] * m2[13]);
-        destination[offset + 14] = (m1[12] * m2[2] + m1[13] * m2[6] + m1[14] * m2[10] + m1[15] * m2[14]);
-        destination[offset + 15] = (m1[12] * m2[3] + m1[13] * m2[7] + m1[14] * m2[11] + m1[15] * m2[15]);
+        destination[destOffset + 12] = (m1[m1Offset + 12] * m2[m2Offset + 0] + m1[m1Offset + 13] * m2[m2Offset + 4]
+                + m1[m1Offset + 14] * m2[m2Offset + 8] + m1[m1Offset + 15] * m2[m2Offset + 12]);
+        destination[destOffset + 13] = (m1[m1Offset + 12] * m2[m2Offset + 1] + m1[m1Offset + 13] * m2[m2Offset + 5]
+                + m1[m1Offset + 14] * m2[m2Offset + 9] + m1[m1Offset + 15] * m2[m2Offset + 13]);
+        destination[destOffset + 14] = (m1[m1Offset + 12] * m2[m2Offset + 2] + m1[m1Offset + 13] * m2[m2Offset + 6]
+                + m1[m1Offset + 14] * m2[m2Offset + 10] + m1[m1Offset + 15] * m2[m2Offset + 14]);
+        destination[destOffset + 15] = (m1[m1Offset + 12] * m2[m2Offset + 3] + m1[m1Offset + 13] * m2[m2Offset + 7]
+                + m1[m1Offset + 14] * m2[m2Offset + 11] + m1[m1Offset + 15] * m2[m2Offset + 15]);
 
     }
 

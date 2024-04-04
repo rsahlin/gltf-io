@@ -30,6 +30,7 @@ import org.gltfio.gltf2.stream.SubStream.DataType;
 import org.gltfio.lib.Buffers;
 import org.gltfio.lib.Constants;
 import org.gltfio.lib.ErrorMessage;
+import org.gltfio.prepare.GltfSettings.Alignment;
 
 public class VanillaGltfCreator implements GltfAssetCreator {
 
@@ -539,11 +540,11 @@ public class VanillaGltfCreator implements GltfAssetCreator {
      * @param sceneIndex
      * @return node index
      */
-    public int addCamera(String name, MinMax bounds, int sceneIndex) {
+    public int addCamera(String name, MinMax bounds, Alignment align, int sceneIndex) {
         int nodeIndex = createNode("Camera node", -1, new float[] { 0, 0, 0 }, null, null);
         JSONScene scene = currentAsset.getScene(sceneIndex);
         JSONNode node = currentAsset.getNode(nodeIndex);
-        int cameraIndex = currentAsset.createCamera(name, bounds, scene, node);
+        int cameraIndex = currentAsset.createCamera(name, bounds, Alignment.CENTER, scene, node);
         node.setJSONTRS(node.getTransform());
         scene.addNodeIndex(nodeIndex);
         return nodeIndex;
