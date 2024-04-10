@@ -566,11 +566,22 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         emissiveFactor[2] = (rgb[2] & 0x0ff) / 255f;
     }
 
+    /**
+     * Sets alphamode and cutoff
+     * 
+     * @param mode
+     * @param cutoff
+     */
     public void setAlpha(AlphaMode mode, byte cutoff) {
         this.alphaMode = mode;
         this.alphaCutoff = (cutoff & 0x0ff) / 255f;
     }
 
+    /**
+     * Returns true if the material has alpha
+     * 
+     * @return
+     */
     public boolean hasAlpha() {
         return !(alphaMode == AlphaMode.OPAQUE);
     }

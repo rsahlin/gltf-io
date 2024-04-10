@@ -13,15 +13,30 @@ public abstract class NamedSubStream<T> extends SubStream<T> {
     protected transient short nameLength;
     protected transient String name;
 
+    /**
+     * Returns the name
+     * 
+     * @return
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Sets the name
+     * 
+     * @param name
+     */
     protected void setName(String name) {
         nameLength = (short) (name != null ? name.length() : 0);
         this.name = name;
     }
 
+    /**
+     * Fetches and stores name from payload buffer
+     * 
+     * @param payload
+     */
     protected void fetchName(ByteBuffer payload) {
         byte[] nameArray = new byte[payload.getShort()];
         payload.get(nameArray);
@@ -31,6 +46,11 @@ public abstract class NamedSubStream<T> extends SubStream<T> {
         Logger.d(getClass(), "Name " + name);
     }
 
+    /**
+     * Stores the name in the destination buffer
+     * 
+     * @param buffer
+     */
     protected void putName(ByteBuffer buffer) {
         buffer.putShort(nameLength);
         if (nameLength > 0) {

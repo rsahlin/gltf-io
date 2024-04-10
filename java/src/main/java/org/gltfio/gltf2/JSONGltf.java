@@ -308,10 +308,10 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
      * of sampler is returned.
      * 
      * @param sampler
-     * @param textures Array of textures to use the sampler
+     * @param textureSources Array of textures to use the sampler
      * @return
      */
-    public int addSampler(JSONSampler sampler, JSONTexture... textures) {
+    public int addSampler(JSONSampler sampler, JSONTexture... textureSources) {
         if (samplers == null) {
             samplers = new ArrayList<JSONSampler>();
         }
@@ -326,7 +326,7 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
             index = samplers.size();
             samplers.add(sampler);
         }
-        for (JSONTexture texture : textures) {
+        for (JSONTexture texture : textureSources) {
             texture.setSamplerIndex(index);
         }
         return index;
@@ -369,10 +369,10 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
     /**
      * Sets the defined scene index, or -1 to not specify
      * 
-     * @param scene
+     * @param sceneIndex
      */
-    public void setSceneIndex(int scene) {
-        this.scene = scene;
+    public void setSceneIndex(int sceneIndex) {
+        this.scene = sceneIndex;
     }
 
     /**
@@ -659,7 +659,7 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
         if (node.getCamera() != null) {
             return node;
         }
-        JSONNode<?>[] children = node.getChildren();
+        JSONNode<?>[] children = node.getChildNodes();
         if (children != null) {
             for (JSONNode<?> child : children) {
                 JSONNode<?> cameraNode = getCameraNode(child);
@@ -710,11 +710,11 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
      * Resolve extensions attached to scenes
      */
     private void resolveSceneExtensions(KHREnvironmentMap envmaps) {
-        ArrayList<JSONScene> scenes = (ArrayList<JSONScene>) getScenes();
-        if (scenes != null) {
-            for (JSONScene s : scenes) {
+        ArrayList<JSONScene> sceneList = (ArrayList<JSONScene>) getScenes();
+        if (sceneList != null) {
+            for (JSONScene s : sceneList) {
                 if (envmaps != null) {
-                    if (scenes.size() > 1) {
+                    if (sceneList.size() > 1) {
                         // Adding the cubemap channel to materials shall be done as a first step when a new
                         // scene is rendered. Otherwise toggling between scenes with/without cubemap will not work.
                         throw new IllegalArgumentException("Not implemented");
@@ -747,11 +747,11 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
         // Check for punctual light extension
         KHRLightsPunctual lights = (KHRLightsPunctual) getExtension(ExtensionTypes.KHR_lights_punctual);
         if (lights != null) {
-            ArrayList<JSONScene> scenes = (ArrayList<JSONScene>) getScenes();
-            for (JSONScene s : scenes) {
-                DepthFirstNodeIterator nodes = new DepthFirstNodeIterator(s);
+            ArrayList<JSONScene> sceneList = (ArrayList<JSONScene>) getScenes();
+            for (JSONScene s : sceneList) {
+                DepthFirstNodeIterator nodeIterator = new DepthFirstNodeIterator(s);
                 JSONNode<?> node = null;
-                while ((node = nodes.next()) != null) {
+                while ((node = nodeIterator.next()) != null) {
                     KHRLightsPunctual l = (KHRLightsPunctual) node.getExtension(ExtensionTypes.KHR_lights_punctual);
                     if (l != null) {
                         if (l instanceof KHRLightsPunctualReference) {
@@ -810,12 +810,12 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
     /**
      * Adds a scene and returns the index to it
      * 
-     * @param scene
+     * @param newScene
      * @return
      */
-    public int addScene(S scene) {
+    public int addScene(S newScene) {
         int sceneIndex = getSceneCount();
-        scenes.add(scene);
+        scenes.add(newScene);
         return sceneIndex;
     }
 

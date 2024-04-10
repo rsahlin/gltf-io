@@ -288,7 +288,7 @@ public class Ladda {
                 JSONScene scene = (JSONScene) asset.getScene(0);
                 MinMax bounds = scene.calculateBounds();
                 if (bounds != null) {
-                    asset.addRuntimeCamera(scene, bounds, settings.getCameraAlignment(), "Default camera");
+                    asset.addRuntimeCamera("Default camera", bounds, settings.getCameraAlignment(), Settings.getInstance().getFloat(Settings.PlatformFloatProperties.DISPLAY_ASPECT), scene);
                 }
                 break;
             case GLXF:

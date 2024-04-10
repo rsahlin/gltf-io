@@ -146,7 +146,7 @@ public class Gltf2TransientDelegator {
                 if (n.getMesh() != null) {
                     n.matrixIndex = scene.nodesWithMeshCount++;
                 }
-                updateNodes(scene, n.getChildren());
+                updateNodes(scene, n.getChildNodes());
             }
         }
     }

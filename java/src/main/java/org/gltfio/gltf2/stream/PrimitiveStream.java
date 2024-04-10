@@ -174,6 +174,11 @@ public class PrimitiveStream extends SubStream<JSONPrimitive> {
         return Type.PRIMITIVE;
     }
 
+    /**
+     * Returns the index of the material
+     * 
+     * @return
+     */
     public int getMaterialIndex() {
         return materialIndex;
     }
@@ -195,30 +200,66 @@ public class PrimitiveStream extends SubStream<JSONPrimitive> {
         this.indicesIndex = indicesIndex;
     }
 
+    /**
+     * Returns the vertexbinding indexes
+     * 
+     * @return
+     */
     public int[] getVertexBindingIndexes() {
         return vertexBindingIndexes;
     }
 
+    /**
+     * Returns an array with the attributes
+     * 
+     * @return
+     */
     public Attributes[] getAttributes() {
         return attributes;
     }
 
+    /**
+     * Returns number of vertices
+     * 
+     * @return
+     */
     public int getVertexCount() {
         return vertexCount;
     }
 
+    /**
+     * Returns number of indices
+     * 
+     * @return
+     */
     public int getIndicesCount() {
         return indicesCount;
     }
 
+    /**
+     * returns the indicesIndex
+     * 
+     * @return
+     */
     public int getIndicesIndex() {
         return indicesIndex;
     }
 
+    /**
+     * Returns the index type
+     * 
+     * @return
+     */
     public IndexType getIndexType() {
         return indexType;
     }
 
+    /**
+     * Returns the index of the attribute, or -1 if not present
+     * 
+     * @param attribute
+     * @return
+     */
     public int getAttributeIndex(Attributes attribute) {
         for (int i = 0; i < attributes.length; i++) {
             if (attribute == attributes[i]) {

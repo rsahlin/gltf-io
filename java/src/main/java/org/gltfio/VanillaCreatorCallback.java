@@ -64,10 +64,20 @@ public class VanillaCreatorCallback implements CreatorCallback {
             new float[] { 0.6f, 0.6f, 0 }
     };
 
+    /**
+     * Returns the copyright text
+     * 
+     * @return
+     */
     public String getCopyRight() {
         return "Copyright";
     }
 
+    /**
+     * Returns the size of the initial buffer
+     * 
+     * @return
+     */
     public int getInitialBuffer() {
         return 5000000;
     }
@@ -485,8 +495,18 @@ public class VanillaCreatorCallback implements CreatorCallback {
         creator.createScene("TexCoordPrimitiveScene", texCoordNodeIndex, nodeIndex, indexNode, largeNode);
     }
 
-    public JSONPrimitive createIndexedPrimitive(VanillaGltfCreator creator, IndexType indexType,
-            HashMap<Attributes, Object> attribMap, int materialIndex, int count, float[] deltaLimitOffset) {
+    /**
+     * Creates an index primitive
+     * 
+     * @param creator
+     * @param indexType
+     * @param attribMap
+     * @param materialIndex
+     * @param count
+     * @param deltaLimitOffset
+     * @return
+     */
+    public JSONPrimitive createIndexedPrimitive(VanillaGltfCreator creator, IndexType indexType, HashMap<Attributes, Object> attribMap, int materialIndex, int count, float[] deltaLimitOffset) {
         float[] pos = (float[]) attribMap.remove(Attributes.POSITION);
         for (Attributes key : attribMap.keySet()) {
             float[] data = (float[]) attribMap.get(key);

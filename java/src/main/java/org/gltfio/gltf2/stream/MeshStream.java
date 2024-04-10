@@ -26,6 +26,11 @@ public class MeshStream extends NamedSubStream<MeshStreamContainer> {
             this.primitiveStreams = primitiveStreams;
         }
 
+        /**
+         * Returns the size in bytes of the primitives
+         * 
+         * @return
+         */
         int getPrimitivesSize() {
             int size = 0;
             for (ByteBuffer bb : primitiveStreams) {
@@ -86,10 +91,20 @@ public class MeshStream extends NamedSubStream<MeshStreamContainer> {
         return 0;
     }
 
+    /**
+     * Returns the primitivecount
+     * 
+     * @return
+     */
     public int getPrimitiveCount() {
         return primitiveCount;
     }
 
+    /**
+     * Returns the primitives in the meshstream
+     * 
+     * @return
+     */
     public PrimitiveStream[] getPrimitives() {
         return primitives;
     }

@@ -152,7 +152,7 @@ public class JSONPrimitive extends BaseObject implements RuntimeObject {
             this.value = (byte) value;
         }
 
-        public static final Attributes get(byte value) {
+        public static Attributes get(byte value) {
             for (Attributes att : values()) {
                 if (value == att.value) {
                     return att;
@@ -161,7 +161,7 @@ public class JSONPrimitive extends BaseObject implements RuntimeObject {
             return null;
         }
 
-        public static final Attributes get(String name) {
+        public static Attributes get(String name) {
             for (Attributes att : values()) {
                 if (att.name().contentEquals(name)) {
                     return att;
@@ -218,11 +218,19 @@ public class JSONPrimitive extends BaseObject implements RuntimeObject {
     private transient int drawCount;
     private transient int vertexCount;
     private transient int accessorUVIndex;
-    public transient int streamVertexIndex = Constants.NO_VALUE;
-    public transient int streamIndicesIndex = Constants.NO_VALUE;
+    protected transient int streamVertexIndex = Constants.NO_VALUE;
+    protected transient int streamIndicesIndex = Constants.NO_VALUE;
     private transient int attributeHash = 0;
 
     public JSONPrimitive() {
+    }
+
+    public final int getStreamVertexIndex() {
+        return streamVertexIndex;
+    }
+
+    public final int getStreamIndicesIndex() {
+        return streamIndicesIndex;
     }
 
     /**
@@ -266,24 +274,24 @@ public class JSONPrimitive extends BaseObject implements RuntimeObject {
      * 
      * TODO - find a more elegant solution
      * 
-     * @param accessors
+     * @param accessorRef
      */
-    protected void setAccessorRef(ArrayList<JSONAccessor> accessors) {
-        accessorRef = accessors;
+    protected void setAccessorRef(ArrayList<JSONAccessor> accessorRef) {
+        this.accessorRef = accessorRef;
     }
 
     /**
      * If this primitive is using indices (not array draw) the accessor is set and can be retreived by calling
      * {@link #getIndices()}
      * 
-     * @param accessors
+     * @param indicesRef
      */
-    protected void setIndicesRef(ArrayList<JSONAccessor> accessors) {
+    protected void setIndicesRef(ArrayList<JSONAccessor> indicesRef) {
         if (getIndicesIndex() > -1) {
-            if (indicesIndex >= accessors.size()) {
+            if (indicesIndex >= indicesRef.size()) {
                 throw new IllegalArgumentException("Invalid indices accessor " + indicesIndex);
             } else {
-                indices = accessors.get(indicesIndex);
+                indices = indicesRef.get(indicesIndex);
             }
         }
     }
@@ -451,11 +459,11 @@ public class JSONPrimitive extends BaseObject implements RuntimeObject {
      * @return
      */
     public int getPipelineHash() {
-        int attributeHash = getAttributeHash();
+        int hash = getAttributeHash();
         Channel[] textureChannels = getMaterial().getTextureChannels();
-        DrawMode mode = getMode();
+        DrawMode drawMode = getMode();
         AlphaMode alphaMode = getMaterial().getAlphaMode();
-        int pipelineHash = JSONPrimitive.getPipelineHash(attributeHash, textureChannels, mode, alphaMode);
+        int pipelineHash = JSONPrimitive.getPipelineHash(hash, textureChannels, drawMode, alphaMode);
         return pipelineHash;
     }
 

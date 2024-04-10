@@ -11,10 +11,10 @@ import org.gltfio.gltf2.JSONMesh;
 import org.gltfio.gltf2.JSONNode;
 import org.gltfio.gltf2.JSONPrimitive;
 import org.gltfio.gltf2.JSONPrimitive.Attributes;
-import org.gltfio.gltf2.stream.MeshStream.MeshStreamContainer;
-import org.gltfio.gltf2.stream.PrimitiveStream.IndexType;
 import org.gltfio.gltf2.MinMax;
 import org.gltfio.gltf2.RenderableScene;
+import org.gltfio.gltf2.stream.MeshStream.MeshStreamContainer;
+import org.gltfio.gltf2.stream.PrimitiveStream.IndexType;
 import org.gltfio.lib.Constants;
 import org.gltfio.lib.Logger;
 
@@ -40,7 +40,7 @@ import org.gltfio.lib.Logger;
  */
 public class SceneStream extends SubStream<RenderableScene> {
 
-    public static int SIZE = CHUNK_HEADER_SIZE + 1 + 4 * DataType.uint32.size + 6 * DataType.uint32.size +
+    public static final int SIZE = CHUNK_HEADER_SIZE + 1 + 4 * DataType.uint32.size + 6 * DataType.uint32.size +
             3 * DataType.uint32.size;
 
     private int primitiveCount = 0;
@@ -176,14 +176,17 @@ public class SceneStream extends SubStream<RenderableScene> {
 
     private int writeMesh(int meshIndex, JSONGltf glTF) throws IOException {
         int streamIndex = Constants.NO_VALUE;
-        if (meshIndex >= 0 && (streamIndex = writer.isSerialized(meshStream, meshIndex)) == Constants.NO_VALUE) {
-            JSONMesh mesh = glTF.getMeshes()[meshIndex];
-            ByteBuffer[] primitives = writePrimitives(glTF, mesh.getPrimitives());
-            MeshStreamContainer msc = new MeshStreamContainer(mesh, primitives);
-            ByteBuffer meshBuffer = meshStream.createBuffer(msc, -1);
-            meshBuffer.position(0);
-            streamIndex = writer.serialize(meshStream, meshIndex, meshBuffer);
-            meshCount++;
+        if (meshIndex < 0) {
+            streamIndex = writer.isSerialized(meshStream, meshIndex);
+            if (streamIndex == Constants.NO_VALUE) {
+                JSONMesh mesh = glTF.getMeshes()[meshIndex];
+                ByteBuffer[] primitives = writePrimitives(glTF, mesh.getPrimitives());
+                MeshStreamContainer msc = new MeshStreamContainer(mesh, primitives);
+                ByteBuffer meshBuffer = meshStream.createBuffer(msc, -1);
+                meshBuffer.position(0);
+                streamIndex = writer.serialize(meshStream, meshIndex, meshBuffer);
+                meshCount++;
+            }
         }
         return streamIndex;
     }
@@ -205,19 +208,21 @@ public class SceneStream extends SubStream<RenderableScene> {
     private ByteBuffer createPrimitive(JSONGltf glTF, JSONPrimitive primitive) throws IOException {
         int materialIndex = primitive.getMaterialIndex();
         int materialStreamIndex = Constants.NO_VALUE;
-        if (materialIndex >= 0 && (materialStreamIndex = writer.isSerialized(materialStream, materialIndex))
-                == Constants.NO_VALUE) {
-            ByteBuffer mBuffer = materialStream.createBuffer(primitive.getMaterial(), -1);
-            materialStreamIndex = writer.serialize(materialStream, materialIndex, mBuffer.position(0));
-            materialCount++;
+        if (materialIndex >= 0) {
+            materialStreamIndex = writer.isSerialized(materialStream, materialIndex);
+            if (materialStreamIndex == Constants.NO_VALUE) {
+                ByteBuffer mBuffer = materialStream.createBuffer(primitive.getMaterial(), -1);
+                materialStreamIndex = writer.serialize(materialStream, materialIndex, mBuffer.position(0));
+                materialCount++;
+            }
         }
         int indicesIndex = primitive.getIndicesIndex();
         int indicesStreamIndex = Constants.NO_VALUE;
         if (indicesIndex >= 0) {
             JSONAccessor indices = primitive.getIndices();
             IndexType indexType = IndexType.get(indices.getComponentType());
-            if ((indicesStreamIndex = writer.isSerialized(indicesStreams[indexType.index], indicesIndex))
-                    == Constants.NO_VALUE) {
+            indicesStreamIndex = writer.isSerialized(indicesStreams[indexType.index], indicesIndex);
+            if (indicesStreamIndex == Constants.NO_VALUE) {
                 indicesStreams[indexType.index].setPrimitive(primitive);
                 ByteBuffer iBuffer = indicesStreams[indexType.index].createBuffer(primitive.getIndices()
                         .getBufferView(), -1);
@@ -268,6 +273,11 @@ public class SceneStream extends SubStream<RenderableScene> {
         return SIZE + getAttributeTypes().length * (DataType.uint32.size + DataType.ubyte.size);
     }
 
+    /**
+     * Serializes the scene
+     * 
+     * @param data
+     */
     public void serializeSceneData(RenderableScene data) {
         JSONGltf glTF = (JSONGltf) data.getRoot();
         JSONMesh[] meshes = glTF.getMeshes();
@@ -277,7 +287,7 @@ public class SceneStream extends SubStream<RenderableScene> {
                 JSONNode n = nodes[i];
                 if (n != null) {
                     writeNode(n, glTF);
-                    for (JSONNode child : n.getChildren()) {
+                    for (JSONNode child : n.getChildNodes()) {
                         if (child != null) {
                             writeNode(child, glTF);
                         }
@@ -310,6 +320,12 @@ public class SceneStream extends SubStream<RenderableScene> {
         }
     }
 
+    /**
+     * Returns true if the attribute is present
+     * 
+     * @param attribute
+     * @return
+     */
     public boolean usesAttribute(Attributes attribute) {
         for (int i = 0; i < attributes.length; i++) {
             if (attributes[i] == attribute) {
@@ -319,6 +335,12 @@ public class SceneStream extends SubStream<RenderableScene> {
         return false;
     }
 
+    /**
+     * Returns the attribute count
+     * 
+     * @param attribute
+     * @return
+     */
     public int getAttributeCount(Attributes attribute) {
         for (int i = 0; i < attributes.length; i++) {
             if (attributes[i] == attribute) {
@@ -328,6 +350,11 @@ public class SceneStream extends SubStream<RenderableScene> {
         return 0;
     }
 
+    /**
+     * Returns an array with the attribute types
+     * 
+     * @return
+     */
     public Attributes[] getAttributeTypes() {
         ArrayList<Attributes> result = new ArrayList<Attributes>();
         for (Attributes binding : attributes) {
@@ -338,10 +365,20 @@ public class SceneStream extends SubStream<RenderableScene> {
         return result.toArray(new Attributes[0]);
     }
 
+    /**
+     * Returns the min scene bounds
+     * 
+     * @return
+     */
     public float[] getMin() {
         return min;
     }
 
+    /**
+     * Returns the max scene bounds
+     * 
+     * @return
+     */
     public float[] getMax() {
         return max;
     }

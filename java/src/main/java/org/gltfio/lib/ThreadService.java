@@ -4,8 +4,6 @@ package org.gltfio.lib;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.gltfio.lib.Logger;
-
 /**
  * Singleton to keep track of thread and executor usage.
  *

@@ -83,12 +83,17 @@ public class VanillaStreamingGltf extends StreamingGltf<VanillaStreamingScene> {
             return primitives;
         }
 
+        /**
+         * Returns the indices to primitives
+         * 
+         * @return
+         */
         public int[] getPrimitiveIndexes() {
             return primitiveIndexes;
         }
 
         @Override
-        public void addPrimitives(ArrayList<JSONPrimitive> primitives) {
+        public void addPrimitives(ArrayList<JSONPrimitive> primitiveList) {
             throw new RuntimeException();
         }
 

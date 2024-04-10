@@ -53,43 +53,18 @@ public class FlattenedScene {
         }
     }
 
-    /**
-     * The data structures needed to render a mesh
-     * 
-     * NAMEHASH int32 Name hash of the mesh
-     * PRIMITIVES uint32[] index of primitives
-     * WEIGHTS float[]
-     * 
-     */
-    private static class RenderMesh {
-        private final int nameHash;
-        private final int[] primitives;
-
-        public RenderMesh(String name, int[] primitives) {
-            this.nameHash = name != null ? name.hashCode() : "".hashCode();
-            this.primitives = primitives;
-        }
-    }
-
-    /**
-     * The data structures needed to render a primitive
-     * 
-     * INDICES uint
-     * ATTRIBUTES VertexBuffer[]
-     * MATERIAL uint32 index of material
-     * DRAWMODE
-     * 
-     */
-    private static class RenderPrimitive {
-
-    }
-
     public FlattenedScene(VertexBufferBundle vertexBufferMap) {
         this.vertexBufferMap = vertexBufferMap;
     }
 
     private VertexBufferBundle vertexBufferMap;
 
+    /**
+     * Sorts the nodes (meshes) in the scene according to pipeline permutations
+     * 
+     * @param sceneNodes
+     * @return
+     */
     public PrimitiveSorterMap sortByPipelines(JSONNode<JSONMesh<JSONPrimitive>>[] sceneNodes) {
         PrimitiveSorterMap primitivesByPipelineHash = new PrimitiveSorterMap();
         sortNode(primitivesByPipelineHash, sceneNodes);
@@ -108,7 +83,7 @@ public class FlattenedScene {
                         primitives.add(node, primitive);
                     }
                 }
-                sortNode(primitivesByPipelineHash, node.getChildren());
+                sortNode(primitivesByPipelineHash, node.getChildNodes());
             }
         }
     }
@@ -117,18 +92,34 @@ public class FlattenedScene {
         private HashMap<Integer, PrimitiveSorter> primitivesByPipeline =
                 new HashMap<Integer, FlattenedScene.PrimitiveSorter>();
 
+        /**
+         * Returns pipeline from hash, or null
+         * 
+         * @param pipelineHash
+         * @return
+         */
         public PrimitiveSorter getByPipeline(int pipelineHash) {
             return primitivesByPipeline.get(pipelineHash);
         }
 
+        /**
+         * Stores pipeline with hash
+         * 
+         * @param pipelineHash
+         * @param primitives
+         */
         public void putByPipeline(int pipelineHash, PrimitiveSorter primitives) {
             if (primitivesByPipeline.containsKey(pipelineHash)) {
-                throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message
-                        + "Already put primitives for hash " + pipelineHash);
+                throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Already put primitives for hash " + pipelineHash);
             }
             primitivesByPipeline.put(pipelineHash, primitives);
         }
 
+        /**
+         * Returns the total number of primitive instances
+         * 
+         * @return
+         */
         public int getTotalPrimitiveCount() {
             int result = 0;
             for (PrimitiveSorter p : primitivesByPipeline.values()) {
@@ -162,10 +153,20 @@ public class FlattenedScene {
             return sorted;
         }
 
+        /**
+         * Returns the number of pipelines needed to render primitives
+         * 
+         * @return
+         */
         public int getPipelineCount() {
             return primitivesByPipeline.size();
         }
 
+        /**
+         * Removes the primitives for the pipelinehash
+         * 
+         * @param pipelineHash
+         */
         public void remove(int pipelineHash) {
             primitivesByPipeline.remove(pipelineHash);
         }

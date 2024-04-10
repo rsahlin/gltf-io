@@ -149,10 +149,10 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
      * Camera will have a Node
      * 
      */
-    public void addRuntimeCamera(RenderableScene scene, MinMax bounds, Alignment align, String name) {
+    public void addRuntimeCamera(String name, MinMax bounds, Alignment align, float aspect, RenderableScene scene) {
         // Setup a default projection
         JSONNode<?> node = createNode(name, -1);
-        selectedCamera = createCamera(name, bounds, align, scene, node);
+        selectedCamera = createCamera(name, bounds, align, aspect, scene, node);
         JSONCamera camera = getCamera(selectedCamera);
         node.setRuntimeCamera(camera);
         addInstanceCamera(camera);
@@ -165,7 +165,7 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
      * @param scene
      * @return Camera
      */
-    public int createCamera(String name, MinMax bounds, Alignment align, RenderableScene scene, JSONNode node) {
+    public int createCamera(String name, MinMax bounds, Alignment align, float aspect, RenderableScene scene, JSONNode node) {
         // Human vision is around 120 degrees horizontally and 180 degrees vertically.
         // Depending on what part of the vision is considered.
         float yFOV = 1.0f;
@@ -191,11 +191,11 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
         float b = (result[1] / 2) / (float) Math.tan(yFOV / 2);
         // TODO - use proper aspect?
         // Probably not since we start with a given screensize.
-        float bx = (result[0] / 2) / (float) Math.tan(yFOV * 1.777f / 2);
+        float bx = (result[0] / 2) / (float) Math.tan(yFOV * aspect / 2);
 
         float distance = Math.max(b, bx) + result[2] / 2;
         Float nearValue = Settings.getInstance().getFloat(LaddaFloatProperties.CAMERA_NEAR);
-        float near = nearValue != null ? nearValue : 0.1f;
+        float near = nearValue != null ? nearValue : Math.min(0.1f, distance / 10);
         Perspective p = new Perspective(Constants.NO_VALUE, yFOV, distance * 4, near);
         JSONCamera camera = new JSONCamera(p, node);
         int cameraIndex = addCamera(camera);
@@ -247,6 +247,17 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
         return new JSONNode(name, mesh);
     }
 
+    /**
+     * Creates a new json node - does not add to asset
+     * 
+     * @param name
+     * @param mesh
+     * @param translation
+     * @param rotation
+     * @param scale
+     * @param children
+     * @return
+     */
     public JSONNode createNode(String name, int mesh, float[] translation, float[] rotation, float[] scale,
             int... children) {
         return new JSONNode(name, mesh, translation, rotation, scale, children);
@@ -273,6 +284,11 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
         }
     }
 
+    /**
+     * Adds a camera
+     * 
+     * @param camera
+     */
     @Deprecated
     public void addInstanceCamera(JSONCamera camera) {
         /**

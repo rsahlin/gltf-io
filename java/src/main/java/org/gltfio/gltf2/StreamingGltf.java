@@ -8,8 +8,8 @@ import org.gltfio.gltf2.stream.MeshStream;
 import org.gltfio.gltf2.stream.NodeStream;
 import org.gltfio.gltf2.stream.SceneStream;
 import org.gltfio.gltf2.stream.SubStream;
-import org.gltfio.gltf2.stream.VertexAttributeStream;
 import org.gltfio.gltf2.stream.SubStreamReader.ChunkStreamer;
+import org.gltfio.gltf2.stream.VertexAttributeStream;
 import org.gltfio.lib.Logger;
 
 public abstract class StreamingGltf<T extends StreamingScene> extends AssetBaseObject implements ChunkStreamer {
@@ -23,6 +23,11 @@ public abstract class StreamingGltf<T extends StreamingScene> extends AssetBaseO
         fileType = FileType.GLB2;
     }
 
+    /**
+     * Sets the scene
+     * 
+     * @param sceneStream
+     */
     public void setScene(SceneStream sceneStream) {
         scene = createScene(sceneStream);
     }

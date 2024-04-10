@@ -100,11 +100,11 @@ public class ExtensionObject implements JsonDeserializer<ExtensionObject>, JsonS
         if (gson == null) {
             createGson();
         }
-        HashMap<String, JSONExtension> extensions = src.extensions;
+        HashMap<String, JSONExtension> extensionMap = src.extensions;
         JsonObject json = new JsonObject();
-        if (extensions.size() > 0) {
-            for (String name : extensions.keySet()) {
-                JsonElement element = gson.toJsonTree(extensions.get(name));
+        if (extensionMap.size() > 0) {
+            for (String name : extensionMap.keySet()) {
+                JsonElement element = gson.toJsonTree(extensionMap.get(name));
                 json.add(name, element);
             }
         }

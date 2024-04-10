@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.gltfio.lib.ErrorMessage;
-
 /**
  * Create an inputstream from a ByteBuffer
  *

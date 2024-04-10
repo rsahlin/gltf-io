@@ -8,7 +8,7 @@ public class StreamingMaterial extends JSONMaterial {
         set(stream);
     }
 
-    protected void set(MaterialStream stream) {
+    private void set(MaterialStream stream) {
         this.name = stream.getName();
         pbrMetallicRoughness = new JSONPBRMetallicRoughness();
         pbrMetallicRoughness.setBasecolorFactor(stream.getBaseColor());

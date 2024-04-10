@@ -128,7 +128,7 @@ public class J2SEModelPreparation
                 expandBuffers.add(a);
                 Integer size = bufferSizes.get(a.getBufferView().getBufferIndex());
                 if (size == null) {
-                    size = new Integer(0);
+                    size = Integer.valueOf(0);
                 }
                 size += a.getCount() * a.getComponentType().size;
                 bufferSizes.put(a.getBufferView().getBufferIndex(), size);

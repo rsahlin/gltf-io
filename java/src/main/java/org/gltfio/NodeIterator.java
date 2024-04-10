@@ -4,17 +4,18 @@ package org.gltfio;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 
+import org.gltfio.gltf2.JSONMesh;
 import org.gltfio.gltf2.JSONNode;
-
+import org.gltfio.gltf2.JSONPrimitive;
 import org.gltfio.lib.MatrixUtils;
 
 /**
  * Superclass for gltf node iterator
  *
  */
-public abstract class NodeIterator implements Iterator<JSONNode> {
+public abstract class NodeIterator implements Iterator<JSONNode<? extends JSONMesh<JSONPrimitive>>> {
 
-    protected static class TraverseData<T extends JSONNode<?>> {
+    protected static class TraverseData<T extends JSONNode<? extends JSONMesh<JSONPrimitive>>> {
         protected T node;
         protected int childIndex = 0;
         protected T[] children;
@@ -37,7 +38,7 @@ public abstract class NodeIterator implements Iterator<JSONNode> {
          */
         protected T next(ArrayDeque<TraverseData<T>> stack) {
             if (node != null) {
-                children = (T[]) node.getChildren();
+                children = (T[]) node.getChildNodes();
                 T n = node;
                 node = null;
                 return n;
@@ -47,7 +48,7 @@ public abstract class NodeIterator implements Iterator<JSONNode> {
             }
             T child = (childIndex) >= children.length ? null : children[childIndex++];
             if (child != null) {
-                stack.push(new TraverseData(child.getChildren()));
+                stack.push(new TraverseData(child.getChildNodes()));
             }
             return child;
         }
@@ -63,8 +64,8 @@ public abstract class NodeIterator implements Iterator<JSONNode> {
 
     }
 
-    protected ArrayDeque<TraverseData<JSONNode>> stack = new ArrayDeque<TraverseData<JSONNode>>();
-    protected JSONNode current = null;
+    protected ArrayDeque<TraverseData<JSONNode<? extends JSONMesh<JSONPrimitive>>>> stack = new ArrayDeque<>();
+    protected JSONNode<? extends JSONMesh<JSONPrimitive>> current = null;
     protected int currentChild = -1;
 
     /**
@@ -84,7 +85,7 @@ public abstract class NodeIterator implements Iterator<JSONNode> {
         if (start == null) {
             throw new IllegalArgumentException("Start node may not be null");
         }
-        stack.push(new TraverseData(start.getChildren()));
+        stack.push(new TraverseData(start.getChildNodes()));
     }
 
 }

@@ -86,26 +86,55 @@ public class MaterialStream extends NamedSubStream<JSONMaterial> {
         putIntsAndUpdate(buffer, indexes);
     }
 
+    /**
+     * Returns the basecolor
+     * 
+     * @return
+     */
     public byte[] getBaseColor() {
         return baseColor;
     }
 
+    /**
+     * Returns the metallicfactor
+     * 
+     * @return
+     */
     public byte getMetallic() {
         return metallic;
     }
 
+    /**
+     * Returns the roughnessfactor
+     * 
+     * @return
+     */
     public byte getRoughness() {
         return roughness;
     }
 
+    /**
+     * Returns the emissive color
+     * 
+     */
     public byte[] getEmissive() {
         return emissive;
     }
 
+    /**
+     * returns the alphamode
+     * 
+     * @return
+     */
     public AlphaMode getAlphaMode() {
         return alphaMode;
     }
 
+    /**
+     * Returns the alphacutoff
+     * 
+     * @return
+     */
     public byte getAlphaCutoff() {
         return alphaCutoff;
     }

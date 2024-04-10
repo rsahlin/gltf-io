@@ -1,9 +1,8 @@
 package org.gltfio.gltf2;
 
-import org.gltfio.gltf2.extensions.JSONExtension;
 import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
+import org.gltfio.gltf2.extensions.JSONExtension;
 import org.gltfio.gltf2.extensions.KHREnvironmentMap.KHREnvironmentMapReference;
-import org.gltfio.gltf2.extensions.KHRLightsPunctual;
 import org.gltfio.lib.Transform;
 
 /**
@@ -64,7 +63,7 @@ public interface RenderableScene {
 
     /**
      * Returns the max number of punctual lights used in the scene, the total number of lightsources
-     * are divided by type as defined in {@link KHRLightsPunctual.Light.Type}
+     * are divided by type as defined in khr_lights_punctual
      * 
      * @return Array with max number of lights in the scene
      */

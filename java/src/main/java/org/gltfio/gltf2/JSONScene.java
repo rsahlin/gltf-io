@@ -169,14 +169,14 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
     /**
      * Sets the nodes for the scene.
      * 
-     * @param nodeArray
-     * @param sceneIndexes
+     * @param nodeArraySrc
+     * @param sceneIndexesSrc
      */
-    protected void setNodes(JSONNode[] nodeArray, ArrayList<Integer> sceneIndexes) {
+    protected void setNodes(JSONNode[] nodeArraySrc, ArrayList<Integer> sceneIndexesSrc) {
         nodeRefs = new ArrayList<JSONNode>();
-        if (sceneIndexes != null) {
-            for (int index : sceneIndexes) {
-                nodeRefs.add(nodeArray[index]);
+        if (sceneIndexesSrc != null) {
+            for (int index : sceneIndexesSrc) {
+                nodeRefs.add(nodeArraySrc[index]);
             }
         }
     }
@@ -465,12 +465,10 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
 
         private void createVertexBuffers(int key, StreamifyData sd, VertexBufferBundle vertexBundle) {
             VertexBuffer[] vertexBuffers = new VertexBuffer[sd.attributeList.length];
-
             for (int i = 0; i < sd.attributeList.length; i++) {
                 ArrayList<AttributeData> data = sd.attributeList[i];
                 if (data != null && data.size() > 0) {
-                    VertexBuffer vertexBuffer = new VertexBuffer(data, sd.getTotalCount(), sd.sortedAttributes[i],
-                            sd.dataTypes[i]);
+                    VertexBuffer vertexBuffer = new VertexBuffer(data, sd.getTotalCount(), sd.sortedAttributes[i], sd.dataTypes[i]);
                     vertexBuffers[i] = vertexBuffer;
                 }
             }
@@ -484,8 +482,7 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
                     }
                 }
                 vertexBundle.addIndices(key, indexBuffers);
-                Logger.d(getClass(), "Created vertexbuffers for " + sd.totalCountTable[0] + " vertices and "
-                        + sd.indicesCount[0] + ", " + sd.indicesCount[1] + ", " + sd.indicesCount[2] + " indices");
+                Logger.d(getClass(), "Created vertexbuffers for " + sd.totalCountTable[0] + " vertices and " + sd.indicesCount[0] + ", " + sd.indicesCount[1] + ", " + sd.indicesCount[2] + " indices");
             } else {
                 Logger.d(getClass(), "Created vertexbuffers for " + sd.totalCountTable[0] + " vertices (no indices)");
             }
@@ -563,8 +560,8 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
                     primitive.streamVertexIndex = attributeList[0].size();
                     for (int i = 0; i < sortedAttributes.length; i++) {
                         Attributes attribute = sortedAttributes[i];
-                        JSONAccessor accessor = null;
-                        if (((accessor = primitive.getAccessor(attribute))) != null) {
+                        JSONAccessor accessor = primitive.getAccessor(attribute);
+                        if (accessor != null) {
                             count = count == 0 ? accessor.getCount() : count;
                             if (accessor.getCount() != count) {
                                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message
@@ -574,9 +571,10 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
                             int hash = accessor.hashCode();
                             accessorHashMap[i].put(hash, primitive.streamVertexIndex);
                             DataType dataType = DataType.get(accessor.getComponentType(), accessor.getType());
+                            float[][] minMax = attribute == Attributes.POSITION ? new float[][] { accessor.getMin(), accessor.getMax() } : null;
                             AttributeData data = new AttributeData(accessor.getBuffer().asReadOnlyBuffer(), count,
                                     dataType, accessor.getBufferView().getByteOffset(),
-                                    accessor.getBufferView().getByteStride(), totalCountTable[i]);
+                                    accessor.getBufferView().getByteStride(), totalCountTable[i], minMax);
                             attributeList[i].add(data);
                             dataTypes[i] = dataType;
                             totalCountTable[i] += count;
@@ -584,16 +582,16 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
                     }
                 }
 
-                JSONAccessor indices = primitive.getIndices();
-                if (indices != null) {
+                JSONAccessor indexAccessor = primitive.getIndices();
+                if (indexAccessor != null) {
                     if (this.indicesCount == null) {
                         this.indicesCount = new int[IndexType.values().length];
                     }
-                    int indexCount = indices.getCount();
-                    DataType dataType = DataType.get(indices.getComponentType(), indices.getType());
-                    IndexType type = IndexType.get(indices.getComponentType());
-                    AttributeData data = new AttributeData(indices.getBuffer().asReadOnlyBuffer(), indexCount,
-                            dataType, indices.getBufferView().getByteOffset(), dataType.size, indicesCount[type.index]);
+                    int indexCount = indexAccessor.getCount();
+                    DataType dataType = DataType.get(indexAccessor.getComponentType(), indexAccessor.getType());
+                    IndexType type = IndexType.get(indexAccessor.getComponentType());
+                    AttributeData data = new AttributeData(indexAccessor.getBuffer().asReadOnlyBuffer(), indexCount,
+                            dataType, indexAccessor.getBufferView().getByteOffset(), dataType.size, indicesCount[type.index], null);
                     primitive.streamIndicesIndex = this.indices[type.index].size();
                     this.indices[type.index].add(data);
                     indicesCount[type.index] += indexCount;
@@ -614,6 +612,11 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
 
     }
 
+    /**
+     * Go through vertice data and attributes and streamline in non-interleaved manner.
+     * 
+     * @return
+     */
     public VertexBufferBundle streamifyVertexData() {
         JSONBuffer[] buffers = getBuffers();
         StreamifyMap streamifyMap = new StreamifyMap();
@@ -644,7 +647,7 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
                     }
                 }
                 // process children
-                streamifyNode(streamifyMap, node.getChildren());
+                streamifyNode(streamifyMap, node.getChildNodes());
             }
         }
     }

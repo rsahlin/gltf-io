@@ -151,8 +151,13 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
         this.transform = new Transform();
     }
 
-    protected void setMesh(int mesh) {
-        this.mesh = mesh != -1 ? mesh : null;
+    /**
+     * Sets the mesh reference index
+     * 
+     * @param meshIndex
+     */
+    protected void setMesh(int meshIndex) {
+        this.mesh = meshIndex != -1 ? meshIndex : null;
     }
 
     /**
@@ -185,14 +190,14 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
     /**
      * Internal method - only call when resolving scenegraph
      * 
-     * @param mesh
+     * @param meshRef
      * @throws IllegalArgumentException If node has already been set
      */
-    public void setMeshRef(M mesh) {
+    public void setMeshRef(M meshRef) {
         if (nodeMesh != null) {
             throw new IllegalArgumentException("Mesh reference already set");
         }
-        nodeMesh = mesh;
+        nodeMesh = meshRef;
     }
 
     /**
@@ -201,7 +206,7 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
      * 
      * @param childNodes
      */
-    public void setChildrenRef(ArrayList<JSONNode> childNodes) {
+    public void setChildNodes(ArrayList<JSONNode> childNodes) {
         this.childNodes = childNodes.toArray(new JSONNode[0]);
         for (JSONNode child : childNodes) {
             child.setParent(this);
@@ -240,7 +245,7 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
      * 
      * @return Array of child nodes
      */
-    public JSONNode[] getChildren() {
+    public JSONNode[] getChildNodes() {
         return childNodes;
     }
 
@@ -318,9 +323,9 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
      */
     public int getNodeDepth() {
         int depth = 0;
-        JSONNode[] childNodes = getChildren();
-        if (childNodes != null) {
-            for (JSONNode n : childNodes) {
+        JSONNode[] nodes = getChildNodes();
+        if (nodes != null) {
+            for (JSONNode n : nodes) {
                 depth = Math.max(depth, internalGetNodeDepth(1));
             }
         }
@@ -330,7 +335,7 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
     private int internalGetNodeDepth(int depth) {
         int result = depth;
         if (children != null) {
-            for (JSONNode n : getChildren()) {
+            for (JSONNode n : getChildNodes()) {
                 result = Math.max(result, n.internalGetNodeDepth(depth + 1));
             }
         }
@@ -367,10 +372,10 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
      * @return the result matrix, for this nodes transform and parents transforms.
      */
     protected float[] concatParentsMatrix() {
-        JSONNode parent = getParent();
-        if (parent != null) {
-            MatrixUtils.mul4(parent.transform.updateMatrix(), transform.updateMatrix(), parentMatrix);
-            return parent.concatParentsMatrix(parentMatrix);
+        JSONNode parentNode = getParent();
+        if (parentNode != null) {
+            MatrixUtils.mul4(parentNode.transform.updateMatrix(), transform.updateMatrix(), parentMatrix);
+            return parentNode.concatParentsMatrix(parentMatrix);
         }
         return MatrixUtils.copy(transform.updateMatrix(), 0, parentMatrix, 0);
     }
@@ -383,10 +388,10 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
      * @return result The sum of this nodes transform and all direct parents.
      */
     protected float[] concatParentsMatrix(float[] mat) {
-        JSONNode parent = getParent();
-        if (parent != null) {
-            MatrixUtils.mul4(parent.transform.updateMatrix(), mat, parentMatrix);
-            return parent.concatParentsMatrix(parentMatrix);
+        JSONNode parentNode = getParent();
+        if (parentNode != null) {
+            MatrixUtils.mul4(parentNode.transform.updateMatrix(), mat, parentMatrix);
+            return parentNode.concatParentsMatrix(parentMatrix);
         }
         return mat;
     }
@@ -395,24 +400,24 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
      * Attaches or removes a camera from this node, specify null to remove camera
      * Runtime usage only - this will not set camera index
      * 
-     * @param camera
+     * @param runtimeCamera
      * @throws IllegalArgumentException If node already references a camera
      */
-    public void setRuntimeCamera(JSONCamera camera) {
+    public void setRuntimeCamera(JSONCamera runtimeCamera) {
         if (cameraRef != null) {
             throw new IllegalArgumentException(
                     ErrorMessage.INVALID_VALUE.message + ", Node already has camera: " + this.camera);
         }
-        cameraRef = camera;
+        cameraRef = runtimeCamera;
     }
 
     /**
      * Sets the JSON cameraindex - use this when creating glTF asset
      * 
-     * @param camera Camera index, or -1 to remove camera
+     * @param cameraIndex Camera index, or -1 to remove camera
      */
-    public void setCameraIndex(int camera) {
-        this.camera = camera > -1 ? camera : null;
+    public void setCameraIndex(int cameraIndex) {
+        this.camera = cameraIndex > -1 ? cameraIndex : null;
     }
 
     /**
@@ -472,27 +477,27 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
     /**
      * Sets the JSON TRS values from transform, use this when creating a node for export
      * 
-     * @param transform
+     * @param source
      */
-    public void setJSONTRS(Transform transform) {
-        if (transform != null) {
+    public void setJSONTRS(Transform source) {
+        if (source != null) {
             translation = new float[3];
-            transform.getTranslate(translation, 0);
+            source.getTranslate(translation, 0);
             rotation = new float[4];
-            transform.getRotation(rotation, 0);
+            source.getRotation(rotation, 0);
             scale = new float[3];
-            transform.getScale(scale, 0);
+            source.getScale(scale, 0);
         }
     }
 
     /**
      * Set the JSON quaternion rotation - use this when creating node for export, not runtime.
      * 
-     * @param rotation
+     * @param quats
      */
-    public void setJSONRotation(float[] rotation) {
+    public void setJSONRotation(float[] quats) {
         this.rotation = new float[4];
-        System.arraycopy(rotation, 0, this.rotation, 0, 4);
+        System.arraycopy(quats, 0, this.rotation, 0, 4);
     }
 
     /**
@@ -553,9 +558,9 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
                 }
             }
         }
-        JSONNode[] childNodes = getChildren();
-        if (childNodes != null) {
-            for (JSONNode child : childNodes) {
+        JSONNode[] nodes = getChildNodes();
+        if (nodes != null) {
+            for (JSONNode child : nodes) {
                 child.calculateBounds(parentBounds, mat, stack);
             }
         }

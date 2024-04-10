@@ -302,8 +302,9 @@ public class JSONBufferView extends BaseObject {
                 throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message);
             }
             put((byte[]) sourceArray);
-        } else
+        } else {
             throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + sourceArray);
+        }
     }
 
     /**

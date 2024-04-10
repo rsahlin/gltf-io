@@ -56,7 +56,7 @@ public class LaddaAssetResolver implements AssetResolver {
                         childNodes.add(child);
                     }
                 }
-                n.setChildrenRef(childNodes);
+                n.setChildNodes(childNodes);
             }
         }
     }

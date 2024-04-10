@@ -4,10 +4,13 @@ import org.gltfio.gltf2.stream.PrimitiveStream.IndexType;
 
 public class Shapes {
 
+    private Shapes() {
+    }
+
     /**
      * Box shape that can be used with indexed drawing
      */
-    public static float[] INDEXED_BOX_VERTICES = new float[] {
+    public static final float[] INDEXED_BOX_VERTICES = new float[] {
             -0.5f, -0.5f, 0.5f,
             0.5f, -0.5f, 0.5f,
             0.5f, 0.5f, 0.5f,
@@ -16,7 +19,7 @@ public class Shapes {
             -0.5f, -0.5f, -0.5f,
             -0.5f, 0.5f, -0.5f,
             0.5f, 0.5f, -0.5f };
-    public static int[] INDEXED_BOX_INDICES = new int[] {
+    public static final int[] INDEXED_BOX_INDICES = new int[] {
             0, 1, 2, 2, 3, 0, // front
             5, 0, 3, 3, 6, 5, // left
             1, 4, 7, 7, 2, 1, // right
@@ -25,13 +28,13 @@ public class Shapes {
             4, 5, 6, 6, 7, 4 // back
     };
 
-    public static float[] INDEXED_QUAD_VERTICES = new float[] {
+    public static final float[] INDEXED_QUAD_VERTICES = new float[] {
             -0.5f, -0.5f, 0.5f,
             0.5f, -0.5f, 0.5f,
             0.5f, 0.5f, 0.5f,
             -0.5f, 0.5f, 0.5f };
 
-    public static int[] INDEXED_QUAD_INDICES = new int[] {
+    public static final int[] INDEXED_QUAD_INDICES = new int[] {
             0, 1, 2, 2, 3, 0 // front
     };
 

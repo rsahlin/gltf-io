@@ -30,6 +30,7 @@ import org.gltfio.gltf2.stream.SubStream.DataType;
 import org.gltfio.lib.Buffers;
 import org.gltfio.lib.Constants;
 import org.gltfio.lib.ErrorMessage;
+import org.gltfio.lib.Settings;
 import org.gltfio.prepare.GltfSettings.Alignment;
 
 public class VanillaGltfCreator implements GltfAssetCreator {
@@ -121,12 +122,12 @@ public class VanillaGltfCreator implements GltfAssetCreator {
 
     }
 
-    private void create(String copyright, int initialBuffer) {
+    private void create(String copyrightStr, int initialBufferSize) {
         if (currentAsset != null) {
             throw new IllegalArgumentException();
         }
-        currentAsset = new VanillaGltf(copyright);
-        createBuffer(initialBuffer);
+        currentAsset = new VanillaGltf(copyrightStr);
+        createBuffer(initialBufferSize);
     }
 
     private void createBuffer(int capacity) {
@@ -203,6 +204,15 @@ public class VanillaGltfCreator implements GltfAssetCreator {
                 new int[] { verticeIndex });
     }
 
+    /**
+     * Creates an indexed primitive
+     * 
+     * @param materialIndex
+     * @param vertexData
+     * @param indices
+     * @param indexType
+     * @return
+     */
     public JSONPrimitive createIndexPrimitive(int materialIndex, HashMap<Attributes, Object> vertexData,
             int[] indices,
             IndexType indexType) {
@@ -213,6 +223,13 @@ public class VanillaGltfCreator implements GltfAssetCreator {
 
     }
 
+    /**
+     * Creates an arrayed primitive
+     * 
+     * @param materialIndex
+     * @param attributeMap
+     * @return
+     */
     public JSONPrimitive createArrayPrimitive(int materialIndex, HashMap<Attributes, Object> attributeMap) {
         HashMap<Attributes, Integer> map = createAttributeMap(attributeMap);
         return currentAsset.createPrimitive(DrawMode.TRIANGLES, materialIndex, -1, map);
@@ -251,8 +268,16 @@ public class VanillaGltfCreator implements GltfAssetCreator {
         return attributeMap;
     }
 
-    public JSONPrimitive createIndexedPrimitive(int materialIndex, HashMap<Attributes, Object> vertexData,
-            int[] indices, IndexType indexType) {
+    /**
+     * Creates an indexed primitive
+     * 
+     * @param materialIndex
+     * @param vertexData
+     * @param indices
+     * @param indexType
+     * @return
+     */
+    public JSONPrimitive createIndexedPrimitive(int materialIndex, HashMap<Attributes, Object> vertexData, int[] indices, IndexType indexType) {
         HashMap<Attributes, Integer> attributeMap = createAttributeMap(vertexData);
         int indiceIndex = createAccessor(Shapes.getIndices(indices, indexType), indexType.dataType,
                 Target.ELEMENT_ARRAY_BUFFER, "indexboxindices", false);
@@ -506,27 +531,61 @@ public class VanillaGltfCreator implements GltfAssetCreator {
         return currentAsset;
     }
 
+    /**
+     * Adds an extension to the material
+     * 
+     * @param materialIndex
+     * @param extension
+     */
     public void addExtension(int materialIndex, JSONExtension extension) {
         currentAsset.addJSONExtension(getMaterial(materialIndex), extension);
     }
+
+    /**
+     * Returns the material
+     * 
+     * @param materialIndex
+     * @return
+     */
 
     public JSONMaterial getMaterial(int materialIndex) {
         ArrayList<JSONMaterial> list = currentAsset.getMaterials();
         return list.get(materialIndex);
     }
 
+    /**
+     * Returns the node
+     * 
+     * @param nodeIndex
+     * @return
+     */
     public JSONNode getNode(int nodeIndex) {
         return currentAsset.getNode(nodeIndex);
     }
 
-    public void addLight(int sceneIndex, int nodeIndex, Light.Type type, float[] color, float intensity,
-            float... data) {
+    /**
+     * Adds a light to the scene at the specified node.
+     * 
+     * @param sceneIndex
+     * @param nodeIndex
+     * @param type
+     * @param color
+     * @param intensity
+     * @param data
+     */
+    public void addLight(int sceneIndex, int nodeIndex, Light.Type type, float[] color, float intensity, float... data) {
         JSONScene scene = currentAsset.getScene(sceneIndex);
         JSONNode parent = currentAsset.getNode(nodeIndex);
         scene.addNodeIndex(nodeIndex);
         currentAsset.addLight(scene, parent, color, intensity, type, data);
     }
 
+    /**
+     * Returns the camera at index
+     * 
+     * @param cameraIndex
+     * @return
+     */
     public JSONCamera getCamera(int cameraIndex) {
         return currentAsset.getCamera(cameraIndex);
     }
@@ -544,7 +603,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
         int nodeIndex = createNode("Camera node", -1, new float[] { 0, 0, 0 }, null, null);
         JSONScene scene = currentAsset.getScene(sceneIndex);
         JSONNode node = currentAsset.getNode(nodeIndex);
-        int cameraIndex = currentAsset.createCamera(name, bounds, Alignment.CENTER, scene, node);
+        int cameraIndex = currentAsset.createCamera(name, bounds, Alignment.CENTER, Settings.getInstance().getFloat(Settings.PlatformFloatProperties.DISPLAY_ASPECT), scene, node);
         node.setJSONTRS(node.getTransform());
         scene.addNodeIndex(nodeIndex);
         return nodeIndex;

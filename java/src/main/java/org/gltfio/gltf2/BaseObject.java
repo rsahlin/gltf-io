@@ -18,7 +18,7 @@ public abstract class BaseObject {
 
     private static int idCounter = 1;
 
-    private transient final int baseObjectId = idCounter++;
+    private final transient int baseObjectId = idCounter++;
 
     @SerializedName(EXTENSIONS)
     private ExtensionObject extensions;

@@ -4,8 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import org.gltfio.gltf2.JSONPrimitive.Attributes;
-import org.gltfio.gltf2.extensions.JSONExtension;
 import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
+import org.gltfio.gltf2.extensions.JSONExtension;
 import org.gltfio.gltf2.extensions.KHREnvironmentMap.KHREnvironmentMapReference;
 import org.gltfio.gltf2.extensions.KHRLightsPunctual;
 import org.gltfio.gltf2.stream.IndicesStream;
@@ -180,6 +180,11 @@ public abstract class StreamingScene extends BaseObject implements RenderableSce
         return null;
     }
 
+    /**
+     * Creates the arrays needed to stream the scene
+     * 
+     * @param stream
+     */
     protected void createArrays(SceneStream stream) {
         materials = new JSONMaterial[stream.getMaterialCount()];
         meshes = new JSONMesh[stream.getMeshCount()];
@@ -213,10 +218,10 @@ public abstract class StreamingScene extends BaseObject implements RenderableSce
         return buffers;
     }
 
-    private JSONBuffer[] createIndexBuffers(int[] indexCount) {
-        JSONBuffer[] buffers = new JSONBuffer[indexCount.length];
+    private JSONBuffer[] createIndexBuffers(int[] counts) {
+        JSONBuffer[] buffers = new JSONBuffer[counts.length];
         for (IndexType type : IndexType.values()) {
-            int count = indexCount[type.index];
+            int count = counts[type.index];
             if (count > 0) {
                 buffers[type.index] = new JSONBuffer(type.name(), count * type.dataType.size);
             }
@@ -231,11 +236,21 @@ public abstract class StreamingScene extends BaseObject implements RenderableSce
         return bb.position(byteOffset);
     }
 
+    /**
+     * Adds a material from the stream
+     * 
+     * @param stream
+     */
     public void addMaterial(MaterialStream stream) {
         JSONMaterial material = new StreamingMaterial(stream);
         materials[currentMaterialIndex++] = material;
     }
 
+    /**
+     * Adds indices from the stream
+     * 
+     * @param stream
+     */
     public void addIndices(IndicesStream stream) {
         int count = stream.getIndexCount();
         IndexType indexType = stream.getIndexType();
@@ -272,6 +287,11 @@ public abstract class StreamingScene extends BaseObject implements RenderableSce
 
     }
 
+    /**
+     * Adds vertex attributes from the stream
+     * 
+     * @param stream
+     */
     public void addVertexAttributes(VertexAttributeStream stream) {
         int count = stream.getElementCount();
         VertexAttribute va = stream.getAttributeType();
@@ -311,6 +331,11 @@ public abstract class StreamingScene extends BaseObject implements RenderableSce
         }
     }
 
+    /**
+     * Adds a mesh
+     * 
+     * @param stream
+     */
     public void addMesh(MeshStream stream) {
         JSONMesh vm = createMesh(stream);
         meshes[currentMeshIndex++] = vm;
@@ -376,20 +401,41 @@ public abstract class StreamingScene extends BaseObject implements RenderableSce
                 case INT:
                     result = Buffers.getIntData(buffer.asIntBuffer(), 4, count);
                     break;
+                default:
+                    throw new IllegalArgumentException();
             }
 
         }
         return result;
     }
 
+    /**
+     * Returns the primitivestream at index or null
+     * 
+     * @param index
+     * @return
+     */
     public PrimitiveStream getPrimitiveStream(int index) {
         return (index >= 0 && index < primitives.length) ? primitives[index] : null;
     }
 
+    /**
+     * Returns the buffer holding the data for attribute
+     * 
+     * @param attribute
+     * @return
+     */
     public JSONBuffer getAttributeBuffer(Attributes attribute) {
         return vertexBuffers[AttributeSorter.getInstance().getLocation(attribute)];
     }
 
+    /**
+     * Returns the bytebuffer for attribute
+     * 
+     * @param p
+     * @param attribute
+     * @return
+     */
     public ByteBuffer getAttributeByteBuffer(PrimitiveStream p, Attributes attribute) {
         JSONBuffer b = getAttributeBuffer(attribute);
         if (b == null) {

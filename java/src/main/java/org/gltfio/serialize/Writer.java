@@ -24,6 +24,9 @@ import com.google.gson.JsonSerializer;
 
 public class Writer {
 
+    private Writer() {
+    }
+
     public static class NodeSerializer implements JsonSerializer<JSONNode> {
 
         @Override

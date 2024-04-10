@@ -92,7 +92,7 @@ class LaddaTest extends BaseTest {
         // Check that the glTF is resolved.
         JSONNode<?>[] glTFNodes = asset1.getNodes();
         Assertions.assertNotNull(glTFNodes);
-        Assertions.assertNotNull(glTFNodes[1].getChildren());
+        Assertions.assertNotNull(glTFNodes[1].getChildNodes());
     }
 
     @Test

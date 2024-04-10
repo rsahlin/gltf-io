@@ -55,6 +55,11 @@ public class Glxf extends AssetBaseObject implements RuntimeObject {
         return asset;
     }
 
+    /**
+     * Returns the nodes
+     * 
+     * @return
+     */
     public JSONNode[] getNodes() {
         return nodes != null ? nodes.clone() : null;
     }

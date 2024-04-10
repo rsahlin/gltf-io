@@ -1,9 +1,10 @@
 
 package org.gltfio;
 
+import org.gltfio.gltf2.JSONMesh;
 import org.gltfio.gltf2.JSONNode;
+import org.gltfio.gltf2.JSONPrimitive;
 import org.gltfio.gltf2.RenderableScene;
-
 import org.gltfio.lib.ErrorMessage;
 import org.gltfio.lib.Matrix.MatrixStack;
 
@@ -42,7 +43,7 @@ public class DepthFirstNodeIterator extends NodeIterator {
     @Override
     public boolean hasNext() {
         while (stack.size() > 0) {
-            TraverseData<JSONNode> t = stack.peekFirst();
+            TraverseData<JSONNode<? extends JSONMesh<JSONPrimitive>>> t = stack.peekFirst();
             if (t != null) {
                 boolean hasNext = t.hasNext();
                 if (hasNext) {
@@ -65,10 +66,10 @@ public class DepthFirstNodeIterator extends NodeIterator {
      * 
      * @return
      */
-    protected JSONNode getNextChild() {
-        TraverseData<JSONNode> t = stack.peekFirst();
+    protected JSONNode<? extends JSONMesh<JSONPrimitive>> getNextChild() {
+        TraverseData<JSONNode<? extends JSONMesh<JSONPrimitive>>> t = stack.peekFirst();
         if (t != null) {
-            JSONNode node = getNextChild(t);
+            JSONNode<? extends JSONMesh<JSONPrimitive>> node = getNextChild(t);
             if (node != null) {
                 return node;
             }
@@ -76,14 +77,14 @@ public class DepthFirstNodeIterator extends NodeIterator {
         return null;
     }
 
-    private JSONNode getNextChild(TraverseData<JSONNode> traverse) {
-        JSONNode child = traverse.next(stack);
+    private JSONNode<? extends JSONMesh<JSONPrimitive>> getNextChild(TraverseData<JSONNode<? extends JSONMesh<JSONPrimitive>>> traverse) {
+        JSONNode<? extends JSONMesh<JSONPrimitive>> child = traverse.next(stack);
         if (child == null) {
             // matrixStack.pop(currentMatrix, 0);
             if (stack.size() > 0) {
                 stack.removeFirst();
             }
-            TraverseData<JSONNode> parent = stack.peekFirst();
+            TraverseData<JSONNode<? extends JSONMesh<JSONPrimitive>>> parent = stack.peekFirst();
             return parent != null ? getNextChild(parent) : null;
         }
         // matrixStack.push(currentMatrix, 0);

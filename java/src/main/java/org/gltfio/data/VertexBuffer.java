@@ -140,6 +140,11 @@ public class VertexBuffer {
             return indicesBufferMap.keySet();
         }
 
+        /**
+         * Returns the total number of vertices in the vertexbundle
+         * 
+         * @return
+         */
         public int getVertexCount() {
             int vertexCount = 0;
             for (VertexBuffer[] b : vertexBufferMap.values()) {
@@ -148,6 +153,11 @@ public class VertexBuffer {
             return vertexCount;
         }
 
+        /**
+         * Returns the total number of indices in the vertexbundle
+         * 
+         * @return
+         */
         public int getIndexCount() {
             int indexCount = 0;
             for (VertexBuffer[] b : indicesBufferMap.values()) {
@@ -195,6 +205,7 @@ public class VertexBuffer {
     public final int elementCount;
     public final Attributes attribute;
     public final DataType dataType;
+    public final float[] minMax;
 
     public VertexBuffer(ArrayList<AttributeData> dataList, int elementCount, Attributes attribute, DataType dataType) {
         this.dataType = dataType;
@@ -203,6 +214,11 @@ public class VertexBuffer {
         this.sizeInBytes = getPaddedBufferSize(elementCount * dataType.size);
         buffer = Buffers.createByteBuffer(sizeInBytes);
         offsets = new int[dataList.size()];
+        if (attribute == Attributes.POSITION) {
+            minMax = new float[6 * dataList.size()];
+        } else {
+            minMax = null;
+        }
         copyData(dataList, buffer);
     }
 
@@ -215,15 +231,25 @@ public class VertexBuffer {
         this.elementCount = elementCount;
         this.attribute = null;
         this.sizeInBytes = getPaddedBufferSize(elementCount * dataType.size);
+        this.minMax = null;
         buffer = Buffers.createByteBuffer(sizeInBytes);
         offsets = new int[dataList.size()];
         copyData(dataList, buffer);
     }
 
     private void copyData(ArrayList<AttributeData> sourceList, ByteBuffer destination) {
+        int minMaxIndex = 0;
         for (int i = 0; i < sourceList.size(); i++) {
             AttributeData data = sourceList.get(i);
             data.copy(destination);
+            if (minMax != null) {
+                minMax[minMaxIndex++] = data.minMax[0][0];
+                minMax[minMaxIndex++] = data.minMax[0][1];
+                minMax[minMaxIndex++] = data.minMax[0][2];
+                minMax[minMaxIndex++] = data.minMax[1][0];
+                minMax[minMaxIndex++] = data.minMax[1][1];
+                minMax[minMaxIndex++] = data.minMax[1][2];
+            }
             offsets[i] = data.vertexOffset;
         }
     }
@@ -241,6 +267,11 @@ public class VertexBuffer {
         return readOnly;
     }
 
+    /**
+     * Returns the array of offsets into source buffers
+     * 
+     * @return
+     */
     public int[] getOffsets() {
         return offsets;
     }

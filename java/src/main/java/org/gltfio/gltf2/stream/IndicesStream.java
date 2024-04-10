@@ -82,8 +82,10 @@ public class IndicesStream extends SubStream<JSONBufferView> {
         this.payload = payload;
         switch (chunkType) {
             case INDICES_SHORT:
-                Logger.d(getClass(), "INDEXES: " + Buffers.toString(payload.asShortBuffer(), 0,
-                        100, -1));
+                Logger.d(getClass(), "INDEXES: " + Buffers.toString(payload.asShortBuffer(), 0, 100, -1));
+                break;
+            default:
+                throw new IllegalArgumentException();
         }
 
     }
@@ -99,6 +101,12 @@ public class IndicesStream extends SubStream<JSONBufferView> {
         return count * indexType.dataType.size + HEADER_SIZE;
     }
 
+    /**
+     * Sets the primitive to the stream
+     * 
+     * @param primitive
+     * @return
+     */
     public boolean setPrimitive(JSONPrimitive primitive) {
         indices = primitive.getIndices();
         indicesBufferIndex = primitive.getIndicesIndex();
@@ -121,6 +129,11 @@ public class IndicesStream extends SubStream<JSONBufferView> {
         Logger.d(getClass(), "INDICES\n" + Buffers.toString(buffer.asShortBuffer(), 0, count, count));
     }
 
+    /**
+     * Returns payload as buffer
+     * 
+     * @return
+     */
     public ByteBuffer getPayload() {
         return payload.position(INDICES_PAYLOAD_OFFSET);
     }
@@ -164,6 +177,11 @@ public class IndicesStream extends SubStream<JSONBufferView> {
         return si;
     }
 
+    /**
+     * Returns the indexcount
+     * 
+     * @return
+     */
     public int getIndexCount() {
         return count;
     }

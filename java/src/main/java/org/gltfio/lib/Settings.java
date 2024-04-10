@@ -59,7 +59,6 @@ public class Settings {
     }
 
     public enum ModuleProperties implements StringProperty {
-
         NAME("module.name", null);
 
         private final String key;
@@ -84,6 +83,34 @@ public class Settings {
         public String getDefault() {
             return defaultValue;
         }
+    }
+
+    public enum PlatformFloatProperties implements FloatProperty {
+        DISPLAY_ASPECT("display.aspect", "1.7777");
+
+        private final String key;
+        private final String defaultValue;
+
+        PlatformFloatProperties(String key, String defaultValue) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+        }
+
+        @Override
+        public String getName() {
+            return name();
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+
+        @Override
+        public String getDefault() {
+            return defaultValue;
+        }
+
     }
 
     public enum Value {
@@ -448,6 +475,16 @@ public class Settings {
      */
     public void setProperty(IntProperty property, int value) {
         setProperty(property, Integer.toString(value));
+    }
+
+    /**
+     * Sets the float property to the float value
+     * 
+     * @param property
+     * @param value
+     */
+    public void setProperty(FloatProperty property, float value) {
+        setProperty(property, Float.toString(value));
     }
 
     /**

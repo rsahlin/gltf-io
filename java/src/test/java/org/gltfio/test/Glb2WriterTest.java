@@ -12,8 +12,8 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-import org.gltfio.glb2.Glb2Reader.Glb2Streamer;
 import org.gltfio.deserialize.Ladda;
+import org.gltfio.glb2.Glb2Reader.Glb2Streamer;
 import org.gltfio.glb2.Glb2Writer;
 import org.gltfio.gltf2.JSONAccessor;
 import org.gltfio.gltf2.JSONMesh;
@@ -179,7 +179,7 @@ public class Glb2WriterTest implements Glb2Streamer {
     }
 
     private void assertPrimitive(JSONPrimitive sourcePrimitive, VanillaStreamingPrimitive primitive) {
-        assertEquals(sourcePrimitive.streamVertexIndex, primitive.streamVertexIndex);
+        assertEquals(sourcePrimitive.getStreamVertexIndex(), primitive.getStreamVertexIndex());
         JSONAccessor indices = sourcePrimitive.getIndices();
         if (indices != null) {
             ByteBuffer indexBuffer = indices.getBuffer();

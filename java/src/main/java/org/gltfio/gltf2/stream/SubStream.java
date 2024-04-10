@@ -159,12 +159,18 @@ public abstract class SubStream<T> {
                             return u8vec3;
                         case VEC4:
                             return u8vec4;
+                        default:
+                            throw new IllegalArgumentException();
                     }
+                default:
+                    throw new IllegalArgumentException();
                 case UNSIGNED_SHORT:
                 case SHORT:
                     switch (type) {
                         case SCALAR:
                             return ushort;
+                        default:
+                            throw new IllegalArgumentException();
                     }
                 case UNSIGNED_INT:
                     return uint32;
@@ -178,9 +184,9 @@ public abstract class SubStream<T> {
                             return vec3;
                         case VEC4:
                             return vec4;
+                        default:
+                            throw new IllegalArgumentException();
                     }
-                default:
-                    throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + componentType);
             }
         }
 
@@ -210,19 +216,19 @@ public abstract class SubStream<T> {
         /**
          * Returns next scalar of the datatype from payload
          * 
-         * @param payload
+         * @param payloadBuffer
          * @return
          */
-        public long getScalar(ByteBuffer payload) {
+        public long getScalar(ByteBuffer payloadBuffer) {
             switch (this) {
                 case ubyte:
-                    return payload.get();
+                    return payloadBuffer.get();
                 case ushort:
-                    return payload.getShort();
+                    return payloadBuffer.getShort();
                 case uint32:
-                    return payload.getInt();
+                    return payloadBuffer.getInt();
                 case uint64:
-                    return payload.getLong();
+                    return payloadBuffer.getLong();
                 default:
                     throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + ", datatype is not scalar "
                             + this);
@@ -232,19 +238,19 @@ public abstract class SubStream<T> {
         /**
          * Stores a scalar of the datatype in payload
          * 
-         * @param payload
+         * @param payloadBuffer
          * @param scalar
          */
-        public void putScalar(ByteBuffer payload, long scalar) {
+        public void putScalar(ByteBuffer payloadBuffer, long scalar) {
             switch (this) {
                 case ubyte:
-                    payload.put((byte) (scalar & 0x0ff));
+                    payloadBuffer.put((byte) (scalar & 0x0ff));
                     break;
                 case ushort:
-                    payload.putShort((short) (scalar & 0x0ffff));
+                    payloadBuffer.putShort((short) (scalar & 0x0ffff));
                     break;
                 case uint32:
-                    payload.putInt((int) scalar);
+                    payloadBuffer.putInt((int) scalar);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid indexmode " + this);
@@ -254,23 +260,23 @@ public abstract class SubStream<T> {
         /**
          * Stores an array of int values as the datatype - do not use for large arrays!
          * 
-         * @param payload
+         * @param payloadBuffer
          */
-        public void putIntData(ByteBuffer payload, int[] data) {
+        public void putIntData(ByteBuffer payloadBuffer, int[] srcData) {
             switch (this) {
                 case ubyte:
-                    for (int d : data) {
-                        payload.put((byte) (d & 0x0ff));
+                    for (int d : srcData) {
+                        payloadBuffer.put((byte) (d & 0x0ff));
                     }
                     break;
                 case ushort:
-                    for (int d : data) {
-                        payload.putShort((short) (d & 0x0ffff));
+                    for (int d : srcData) {
+                        payloadBuffer.putShort((short) (d & 0x0ffff));
                     }
                     break;
                 case uint32:
-                    for (int d : data) {
-                        payload.putInt(d);
+                    for (int d : srcData) {
+                        payloadBuffer.putInt(d);
                     }
                     break;
                 default:
@@ -572,12 +578,24 @@ public abstract class SubStream<T> {
         buffer.position(buffer.position() + floats.length * Float.BYTES);
     }
 
+    /**
+     * Reads floats from the buffer and stores in destination
+     * 
+     * @param buffer
+     * @param destination
+     */
     protected void getFloats(ByteBuffer buffer, float[] destination) {
         for (int i = 0; i < destination.length; i++) {
             destination[i] = buffer.getFloat();
         }
     }
 
+    /**
+     * Reads ints from the buffer and stores in destination
+     * 
+     * @param buffer
+     * @param destination
+     */
     protected void getInts(ByteBuffer buffer, int[] destination) {
         for (int i = 0; i < destination.length; i++) {
             destination[i] = buffer.getInt();

@@ -64,7 +64,7 @@
         <property name="max" value="3000" />
     </module>
     <module name="LineLength">
-        <property name="max" value="120" />
+        <property name="max" value="240" />
         <property name="fileExtensions" value="java" />
         <property name="ignorePattern" value="^(package .*;\s*)|(import .*;\s*)|(\s*//\s*https://.*)" />
     </module>
@@ -160,7 +160,6 @@
         <module name="HiddenField">
             <property name="ignoreAbstractMethods" value="true" />
             <property name="ignoreSetter" value="true" />
-            <property name="ignoreGetter" value="true" />
             <property name="setterCanReturnItsClass" value="true" />
             <property name="ignoreConstructorParameter" value="true" />
         </module>

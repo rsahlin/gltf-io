@@ -25,7 +25,7 @@ public class NodeStream extends NamedSubStream<JSONNode> {
 
     private transient DataType indexMode;
     private transient int meshIndex;
-    private transient float[] TRS;
+    private transient float[] trs;
     private transient int childCount;
 
     public NodeStream() {
@@ -50,9 +50,9 @@ public class NodeStream extends NamedSubStream<JSONNode> {
     }
 
     private void getTRS(ByteBuffer payload) {
-        TRS = new float[10];
+        trs = new float[10];
         for (int i = 0; i < 10; i++) {
-            TRS[i] = payload.getFloat();
+            trs[i] = payload.getFloat();
         }
     }
 
@@ -62,10 +62,10 @@ public class NodeStream extends NamedSubStream<JSONNode> {
         buffer.putInt(index);
         putFloatsAndUpdate(buffer, data.getTransform().serializeTRS());
 
-        int childCount = data.getChildCount();
-        buffer.put(childCount > 0 ? indexMode.value : 0);
-        if (childCount > 0) {
-            indexMode.putScalar(buffer, childCount);
+        int children = data.getChildCount();
+        buffer.put(children > 0 ? indexMode.value : 0);
+        if (children > 0) {
+            indexMode.putScalar(buffer, children);
             indexMode.putIntData(buffer, data.getChildIndexes());
         }
     }
@@ -81,14 +81,29 @@ public class NodeStream extends NamedSubStream<JSONNode> {
         return 0;
     }
 
+    /**
+     * Returns the mesh index
+     * 
+     * @return
+     */
     public int getMeshIndex() {
         return meshIndex;
     }
 
+    /**
+     * Returns the TRS as float values
+     * 
+     * @return
+     */
     public float[] getTRS() {
-        return TRS;
+        return trs;
     }
 
+    /**
+     * Returns the childcount
+     * 
+     * @return
+     */
     public int getChildCount() {
         return childCount;
     }

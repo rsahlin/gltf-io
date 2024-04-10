@@ -7,7 +7,7 @@ public class GltfSettings {
         BOTTOM(2),
         CENTER(3);
 
-        public int value;
+        public final int value;
 
         Alignment(int value) {
             this.value = value;
@@ -41,12 +41,6 @@ public class GltfSettings {
     private ModelPreparation.CreateTangents createTangents;
 
     private Alignment cameraAlignment = Alignment.CENTER;
-
-    public GltfSettings(ModelPreparation.DefaultVertexBuffers defaultVertexBuffers,
-            ModelPreparation.IndexedToShort indexedToShort) {
-        this.defaultVertexBuffers = defaultVertexBuffers;
-        this.indexedToShort = indexedToShort;
-    }
 
     public GltfSettings(Alignment cameraAlignment) {
         if (cameraAlignment != null) {

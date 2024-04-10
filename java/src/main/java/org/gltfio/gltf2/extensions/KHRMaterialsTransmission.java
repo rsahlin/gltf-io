@@ -41,10 +41,20 @@ public class KHRMaterialsTransmission extends JSONExtension {
         return ExtensionTypes.KHR_materials_transmission;
     }
 
+    /**
+     * Returns the transmissionfactor
+     * 
+     * @return
+     */
     public float getTransmissionFactor() {
         return transmissionFactor;
     }
 
+    /**
+     * Returns the transmissiontexture info or null
+     * 
+     * @return
+     */
     public TextureInfo getTransmissionTexture() {
         return transmissionTexture;
     }

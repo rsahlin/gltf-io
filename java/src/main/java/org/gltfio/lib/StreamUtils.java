@@ -14,9 +14,6 @@ import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.gltfio.lib.FileUtils;
-import org.gltfio.lib.Logger;
-
 /**
  * Utility methods for input/output stream operations.
  * 

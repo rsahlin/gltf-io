@@ -54,6 +54,11 @@ public abstract class JSONMesh<T extends JSONPrimitive> extends NamedValue {
      */
     public abstract void addPrimitives(ArrayList<T> primitives);
 
+    /**
+     * Returns the number of primitives in the mesh
+     * 
+     * @return
+     */
     public int getPrimitiveCount() {
         T[] p = getPrimitives();
         return p != null ? p.length : 0;
