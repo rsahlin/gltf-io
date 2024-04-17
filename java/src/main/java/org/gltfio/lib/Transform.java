@@ -169,18 +169,37 @@ public class Transform extends Matrix {
     }
 
     /**
+     * Returns the quaternion rotation values
+     * 
+     * @return
+     */
+    public float[] getRotation() {
+        return rotation;
+    }
+
+    /**
      * Returns the scale, storing at index in the destination
      * 
      * @param destination
      * @param index
      */
-    public void getScale(float[] destination, int index) {
+    public float[] getScale(float[] destination, int index) {
         if (matrixMode) {
             throw new IllegalArgumentException();
         }
         destination[index++] = scale[0];
         destination[index++] = scale[1];
         destination[index++] = scale[2];
+        return destination;
+    }
+
+    /**
+     * Returns the scale values
+     * 
+     * @return
+     */
+    public float[] getScale() {
+        return scale;
     }
 
     /**

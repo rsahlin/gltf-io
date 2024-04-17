@@ -29,8 +29,7 @@ public class GltfExtensions {
         KHR_environment_map(3, new String[] { "KHR_environment_map" }, KHREnvironmentMap.class),
         KHR_lights_punctual(4, new String[] { "KHR_lights_punctual" }, KHRLightsPunctual.class),
         KHR_displayencoding(5, new String[] { "KHR_displayencoding" }, KHRdisplayencoding.class),
-        KHR_materials_emissive_strength(6, new String[] { "KHR_materials_emissive_strength" },
-                KHRMaterialsEmissiveStrength.class),
+        KHR_materials_emissive_strength(6, new String[] { "KHR_materials_emissive_strength" }, KHRMaterialsEmissiveStrength.class),
         KHR_materials_ior(7, new String[] { "KHR_materials_ior" }, KHRMaterialsIOR.class),
         KHR_materials_transmission(8, new String[] { "KHR_materials_transmission" }, KHRMaterialsTransmission.class);
 

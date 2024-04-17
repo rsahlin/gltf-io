@@ -9,6 +9,7 @@ import org.gltfio.gltf2.JSONTexture.NormalTextureInfo;
 import org.gltfio.gltf2.JSONTexture.TextureInfo;
 import org.gltfio.gltf2.extensions.GltfExtensions;
 import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
+import org.gltfio.gltf2.extensions.KHRMaterialsEmissiveStrength;
 import org.gltfio.gltf2.extensions.KHRMaterialsIOR;
 import org.gltfio.gltf2.extensions.KHRMaterialsTransmission;
 import org.gltfio.gltf2.extensions.KHRTextureTransform;
@@ -127,6 +128,10 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     @SerializedName(DOUBLE_SIDED)
     protected boolean doubleSided = DEFAULT_DOUBLE_SIDED;
 
+    /**
+     * Set if material uses KHR_materials_emissive_strength otherwise null
+     */
+    protected transient Float emissiveStrength;
     protected transient float ior = 1.5f;
     protected transient float absorbtion = 0;
     protected transient TextureInfo transmissionTextureInfo;
@@ -237,6 +242,20 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     }
 
     /**
+     * Returns the materials emissive factor multiplied by factor stored in result
+     * 
+     * @param emissiveFactor
+     * @param result
+     * @return The result array
+     */
+    public float[] getEmissive(float factor, float[] result) {
+        result[0] = emissiveFactor[0] * factor;
+        result[1] = emissiveFactor[1] * factor;
+        result[2] = emissiveFactor[2] * factor;
+        return result;
+    }
+
+    /**
      * Returns the alpha rendering mode of the material
      * 
      * @return
@@ -272,6 +291,14 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         resolveTextureChannels();
         resolveIOR();
         resolveTransmission();
+        resolveEmissiveStrength();
+    }
+
+    private void resolveEmissiveStrength() {
+        KHRMaterialsEmissiveStrength emissiveStrengthExtension = (KHRMaterialsEmissiveStrength) getExtension(ExtensionTypes.KHR_materials_emissive_strength);
+        if (emissiveStrengthExtension != null) {
+            this.emissiveStrength = Float.valueOf(emissiveStrengthExtension.getEmissiveStrength());
+        }
     }
 
     private void resolveIOR() {
@@ -482,6 +509,15 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      */
     public float getIOR() {
         return ior;
+    }
+
+    /**
+     * Returns the value of KHR_materials_emissive_strength or null if not specified
+     * 
+     * @return Emissive strength factor or null
+     */
+    public Float getEmissiveStrength() {
+        return emissiveStrength;
     }
 
     /**

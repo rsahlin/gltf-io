@@ -564,17 +564,15 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
                         if (accessor != null) {
                             count = count == 0 ? accessor.getCount() : count;
                             if (accessor.getCount() != count) {
-                                throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message
-                                        + "Wrong count for attribute " + attribute + ", " + accessor.getCount()
-                                        + " should be " + count);
+                                throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Wrong count for attribute " + attribute + ", " + accessor.getCount() + " should be " + count);
                             }
                             int hash = accessor.hashCode();
-                            accessorHashMap[i].put(hash, primitive.streamVertexIndex);
+                            if (posHash != hash) {
+                                accessorHashMap[i].put(hash, primitive.streamVertexIndex);
+                            }
                             DataType dataType = DataType.get(accessor.getComponentType(), accessor.getType());
                             float[][] minMax = attribute == Attributes.POSITION ? new float[][] { accessor.getMin(), accessor.getMax() } : null;
-                            AttributeData data = new AttributeData(accessor.getBuffer().asReadOnlyBuffer(), count,
-                                    dataType, accessor.getBufferView().getByteOffset(),
-                                    accessor.getBufferView().getByteStride(), totalCountTable[i], minMax);
+                            AttributeData data = new AttributeData(accessor.getBuffer().asReadOnlyBuffer(), count, dataType, accessor.getBufferView().getByteOffset(), accessor.getBufferView().getByteStride(), totalCountTable[i], minMax);
                             attributeList[i].add(data);
                             dataTypes[i] = dataType;
                             totalCountTable[i] += count;

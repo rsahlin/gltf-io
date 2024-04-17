@@ -37,8 +37,7 @@ public class Writer {
         }
     }
 
-    public static void writeGltf(JSONGltf asset, String folder, String filename)
-            throws IOException, URISyntaxException {
+    public static void writeGltf(JSONGltf asset, String folder, String filename) throws IOException, URISyntaxException {
         Gson gson = createGson();
         ArrayList<JSONBuffer> buffers = asset.getBuffers();
         if (buffers.size() > 1) {

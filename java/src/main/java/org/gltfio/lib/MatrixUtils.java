@@ -109,12 +109,9 @@ public abstract class MatrixUtils extends VecMath {
         int output = 0;
         int input = 0;
         for (int i = 0; i < count; i++) {
-            resultVec[output++] = matrix[offset] * vec[input] + matrix[offset + 1] * vec[input + 1]
-                    + matrix[offset + 2] * vec[input + 2] + matrix[offset + 3];
-            resultVec[output++] = matrix[offset + 4] * vec[input] + matrix[offset + 5] * vec[input + 1]
-                    + matrix[offset + 6] * vec[input + 2] + matrix[offset + 7];
-            resultVec[output++] = matrix[offset + 8] * vec[input] + matrix[offset + 9] * vec[input + 1]
-                    + matrix[offset + 10] * vec[input + 2] + matrix[offset + 11];
+            resultVec[output++] = matrix[offset] * vec[input] + matrix[offset + 1] * vec[input + 1] + matrix[offset + 2] * vec[input + 2] + matrix[offset + 3];
+            resultVec[output++] = matrix[offset + 4] * vec[input] + matrix[offset + 5] * vec[input + 1] + matrix[offset + 6] * vec[input + 2] + matrix[offset + 7];
+            resultVec[output++] = matrix[offset + 8] * vec[input] + matrix[offset + 9] * vec[input + 1] + matrix[offset + 10] * vec[input + 2] + matrix[offset + 11];
             input += 3;
         }
     }
@@ -603,8 +600,7 @@ public abstract class MatrixUtils extends VecMath {
      * @param y scale factor y
      * @param z scale factor z
      */
-    public static void setRotateM(float[] rm, int rmOffset,
-            float a, float x, float y, float z) {
+    public static void setRotateM(float[] rm, int rmOffset, float a, float x, float y, float z) {
         rm[rmOffset + 3] = 0;
         rm[rmOffset + 7] = 0;
         rm[rmOffset + 11] = 0;

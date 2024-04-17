@@ -91,19 +91,26 @@ public class FileUtils {
     @Deprecated
     public Path getFileSystemPath(String path, String module) throws URISyntaxException, IOException {
         if (isAbsolute(path)) {
+            Logger.d(getClass(), "Absolute path: " + path);
             return Paths.get(path);
         } else {
-            Logger.i(getClass(), "Getting URI for path: " + path);
             Enumeration<URL> urls = ClassLoader.getSystemResources(path);
             if (urls.hasMoreElements()) {
-                return getPath(urls.nextElement(), path);
+                URL url = urls.nextElement();
+                Logger.d(getClass(), "URL using getSystemResources(): " + url.toString());
+                return getPath(url, path);
             }
             URL url = getClass().getClassLoader().getResource(path);
             if (url != null) {
+                Logger.d(getClass(), "URL using getResource(): " + url.toString());
                 return getPath(url, path);
             }
             url = ModuleLayer.boot().findModule(module).getClass().getResource(path);
-            return url != null ? getPath(url, path) : null;
+            if (url != null) {
+                Logger.d(getClass(), "URL findModule().getResource() " + url.toString());
+                return getPath(url, path);
+            }
+            return null;
         }
     }
 
@@ -130,9 +137,7 @@ public class FileUtils {
      */
     public String getResourcePath(String path) throws URISyntaxException, IOException {
         return getResourcePath(path, Settings.getInstance().getProperty(FilesystemProperties.JAVA_TARGET_DIRECTORY),
-                Settings.getInstance().getProperty(FilesystemProperties.SOURCE_DIRECTORY)
-                        + FileUtils.DIRECTORY_SEPARATOR_STRING + Settings.getInstance().getProperty(
-                                FilesystemProperties.RESOURCE_DIRECTORY),
+                Settings.getInstance().getProperty(FilesystemProperties.SOURCE_DIRECTORY) + FileUtils.DIRECTORY_SEPARATOR_STRING + Settings.getInstance().getProperty(FilesystemProperties.RESOURCE_DIRECTORY),
                 Settings.getInstance().getProperty(ModuleProperties.NAME));
     }
 
@@ -146,8 +151,7 @@ public class FileUtils {
      * @throws URISyntaxException
      * @throws IOException
      */
-    public String getResourcePath(String path, String targetDirectory, String sourceDirectory, String module)
-            throws URISyntaxException, IOException {
+    public String getResourcePath(String path, String targetDirectory, String sourceDirectory, String module) throws URISyntaxException, IOException {
         String resourceDirectory = "";
         if (!isAbsolute(path)) {
             if (isAbsolute(sourceDirectory)) {
@@ -157,16 +161,22 @@ public class FileUtils {
                 if (p == null) {
                     return null;
                 }
-                String filePath = p.toString();
-                filePath = FileUtils.getInstance().replaceDirectorySeparator(filePath);
-                int index = filePath.indexOf(targetDirectory);
-                if (index < 0) {
-                    throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Target directory '"
-                            + targetDirectory + "' not found in path: " + filePath);
-                }
-                resourceDirectory = filePath.substring(0, index) + sourceDirectory;
-                if (!resourceDirectory.endsWith(FileUtils.DIRECTORY_SEPARATOR_STRING)) {
-                    resourceDirectory += FileUtils.DIRECTORY_SEPARATOR;
+                if (p.toString().startsWith("jar:")) {
+                    String jarpath = p.toString();
+                    resourceDirectory = jarpath.substring(0, jarpath.length() - path.length() + 1);
+                    Logger.d(getClass(), "Is jar, returning path: " + resourceDirectory);
+                } else {
+                    String filePath = p.toString();
+                    filePath = FileUtils.getInstance().replaceDirectorySeparator(filePath);
+                    int index = filePath.indexOf(targetDirectory);
+                    if (index < 0) {
+                        throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Target directory '"
+                                + targetDirectory + "' not found in path: " + filePath);
+                    }
+                    resourceDirectory = filePath.substring(0, index) + sourceDirectory;
+                    if (!resourceDirectory.endsWith(FileUtils.DIRECTORY_SEPARATOR_STRING)) {
+                        resourceDirectory += FileUtils.DIRECTORY_SEPARATOR;
+                    }
                 }
             }
         }
@@ -205,7 +215,7 @@ public class FileUtils {
         return isJAR(url);
     }
 
-    public boolean isJAR(URL url) {
+    private boolean isJAR(URL url) {
         return url.getProtocol().equalsIgnoreCase("jar");
     }
 
@@ -213,7 +223,7 @@ public class FileUtils {
         if (fileSystem == null) {
             fileSystem = FileSystems.newFileSystem(uri, Collections.<String, Object>emptyMap());
         }
-        return fileSystem.getPath(path);
+        return fileSystem.getPath(uri.toString());
     }
 
     /**
