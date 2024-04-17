@@ -201,6 +201,17 @@ public class Settings {
         return p != null && p.length() > 0 ? p.equalsIgnoreCase(Constants.TRUE) : false;
     }
 
+    /**
+     * Returns the string property as boolean value if set - otherwise false
+     * 
+     * @param property
+     * @return True if stringproperty equalsignorecase true, otherwise false
+     */
+    public boolean getBoolean(StringProperty property) {
+        String str = getProperty(property);
+        return Boolean.parseBoolean(str);
+    }
+
     private void setProperty(Property property, String value) {
         if (value == null) {
             System.clearProperty(property.getKey());
