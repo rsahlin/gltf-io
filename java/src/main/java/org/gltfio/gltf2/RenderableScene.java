@@ -221,4 +221,10 @@ public interface RenderableScene {
      */
     int getMeshCount();
 
+    /**
+     * Releases any internal resource - not including gpu resources such as textures and buffers.
+     * Call this when the asset shall not be access anymore
+     */
+    void destroy();
+
 }

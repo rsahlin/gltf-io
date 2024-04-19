@@ -93,4 +93,10 @@ public class Glxf extends AssetBaseObject implements RuntimeObject {
         }
     }
 
+    @Override
+    public void destroy() {
+        // TODO Auto-generated method stub
+
+    }
+
 }

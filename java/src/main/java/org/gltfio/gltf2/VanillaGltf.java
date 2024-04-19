@@ -43,6 +43,12 @@ public class VanillaGltf extends JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>
                 this.nodeIndexes.add(index);
             }
         }
+
+        @Override
+        public void destroy() {
+            // TODO Auto-generated method stub
+
+        }
     }
 
     public static class VanillaMesh extends JSONMesh<JSONPrimitive> {

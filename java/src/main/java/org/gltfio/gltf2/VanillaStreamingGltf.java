@@ -55,6 +55,12 @@ public class VanillaStreamingGltf extends StreamingGltf<VanillaStreamingScene> {
             nodes[currentNodeIndex++] = n;
         }
 
+        @Override
+        public void destroy() {
+            // TODO Auto-generated method stub
+
+        }
+
     }
 
     public static class VanillaStreamingMesh extends JSONMesh<JSONPrimitive> {
@@ -160,6 +166,12 @@ public class VanillaStreamingGltf extends StreamingGltf<VanillaStreamingScene> {
     @Override
     public VanillaStreamingScene getScene() {
         return scene;
+    }
+
+    @Override
+    public void destroy() {
+        // TODO Auto-generated method stub
+
     }
 
 }

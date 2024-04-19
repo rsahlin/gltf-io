@@ -674,6 +674,7 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
     /**
      * Deletes all gltf arrays such as Nodes,Scenes, Accessors etc that are held by this root document.
      */
+    @Override
     public void destroy() {
         if (cameras == null) {
             throw new IllegalArgumentException("Already called destroy on GLTF asset");
@@ -685,6 +686,8 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
         cameras = null;
         samplers = null;
         textures = null;
+        buffers.clear();
+        buffers = null;
     }
 
     @Override

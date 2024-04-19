@@ -30,6 +30,7 @@ import org.gltfio.gltf2.JSONSampler;
 import org.gltfio.gltf2.JSONScene;
 import org.gltfio.gltf2.JSONTexture;
 import org.gltfio.gltf2.MinMax;
+import org.gltfio.gltf2.RenderableScene;
 import org.gltfio.gltf2.VanillaGltf;
 import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
 import org.gltfio.gltf2.extensions.JSONExtension;
@@ -117,7 +118,8 @@ public class Ladda {
     private static HashMap<String, Ladda> laddaMap = new HashMap<>();
     private AssetResolver resolver = new LaddaAssetResolver();
     final java.lang.reflect.Type glTFType;
-    private Glb2Streamer listener;
+    private Glb2Streamer<?> listener;
+    private Gson gSon;
 
     public Ladda(Type glTFType) {
         if (glTFType == null) {
@@ -162,24 +164,26 @@ public class Ladda {
      * @throws ClassNotFoundException
      * @throws URISyntaxException
      */
-    public AssetBaseObject loadJSON(String path, String filename)
+    public synchronized AssetBaseObject loadJSON(String path, String filename)
             throws IOException, ClassNotFoundException, URISyntaxException {
         path = FileUtils.getInstance().replaceDirectorySeparator(path);
         AssetBaseObject asset = null;
-        Gson gson = createGson();
+        if (gSon == null) {
+            gSon = createGson();
+        }
         FileType ft = FileType.get(filename);
         switch (ft) {
             case GLB:
-                asset = internalloadGLB(gson, path, filename);
+                asset = internalloadGLB(gSon, path, filename);
                 break;
             case GLB2:
                 internalloadGLB2(path, filename);
                 break;
             case GLTF:
-                asset = internalloadGLTF(gson, path, filename);
+                asset = internalloadGLTF(gSon, path, filename);
                 break;
             case GLXF:
-                asset = internalloadGLXF(gson, path, filename);
+                asset = internalloadGLXF(gSon, path, filename);
                 break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + ft);
@@ -215,11 +219,13 @@ public class Ladda {
         return glTF;
     }
 
-    private AssetBaseObject internalloadGLB(Gson gson, String path, String filename)
+    private AssetBaseObject<RenderableScene> internalloadGLB(Gson gson, String path, String filename)
             throws IOException, ClassNotFoundException, URISyntaxException {
         GlbReader deserializer = new GlbReader();
         deserializer.read(path, filename);
-        return internalloadGLB(gson, deserializer, path, filename);
+        AssetBaseObject<RenderableScene> asset = internalloadGLB(gson, deserializer, path, filename);
+        deserializer.destroy();
+        return asset;
     }
 
     private AssetBaseObject internalloadGLB(Gson gson, GlbReader deserializer, String path, String filename)

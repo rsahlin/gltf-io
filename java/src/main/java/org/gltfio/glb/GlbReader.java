@@ -40,8 +40,7 @@ public class GlbReader {
         ByteBuffer bb = FileUtils.getInstance().mapFile(path, fileName);
         if (bb == null) {
             Logger.d(getClass(), "Is JAR");
-            InputStream is = getClass()
-                    .getResourceAsStream(FileUtils.getInstance().addStartingDirectorySeparator(path + fileName));
+            InputStream is = getClass().getResourceAsStream(FileUtils.getInstance().addStartingDirectorySeparator(path + fileName));
             if (is == null) {
                 throw new IllegalArgumentException(path + fileName);
             }
@@ -101,4 +100,15 @@ public class GlbReader {
                     + (chunk.chunkLength - destination.getByteLength()) + " byte(s) more in chunk source.");
         }
     }
+
+    /**
+     * Releases resources used
+     */
+    public void destroy() {
+        header = null;
+        chunks.clear();
+        chunks = null;
+        mappedByteBuffer = null;
+    }
+
 }

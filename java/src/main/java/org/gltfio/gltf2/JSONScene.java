@@ -460,6 +460,8 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
                 StreamifyData sd = streamifyMap.get(key);
                 createVertexBuffers(key, sd, vertexBufferMap);
             }
+            streamifyMap.clear();
+            streamifyMap = null;
             return vertexBufferMap;
         }
 

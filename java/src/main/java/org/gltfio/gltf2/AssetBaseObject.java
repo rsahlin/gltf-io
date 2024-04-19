@@ -464,4 +464,8 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
         }
     }
 
+    /**
+     * Releases resources - call this when the asset is no longer in use
+     */
+    public abstract void destroy();
 }
