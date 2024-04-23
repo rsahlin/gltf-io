@@ -111,8 +111,7 @@ public class JSONBufferView extends BaseObject {
      * @param target
      * @param name
      */
-    protected JSONBufferView(JSONGltf gltf, int index, int sizeInBytes, int offset, int stride, Target target,
-            String name) {
+    protected JSONBufferView(JSONGltf gltf, int index, int sizeInBytes, int offset, int stride, Target target, String name) {
         bufferIndex = index;
         buffer = gltf.getBuffer(index);
         byteOffset = offset;

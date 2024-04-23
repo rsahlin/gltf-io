@@ -99,6 +99,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
     private int currentBuffer = Constants.NO_VALUE;
     private int currentBufferOffset = Constants.NO_VALUE;
     private int currentBufferSize = Constants.NO_VALUE;
+    private int defaultBufferSize = 500000;
 
     private final String copyright;
     private final int initialBuffer;
@@ -110,8 +111,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
         this.callback = callback;
     }
 
-    public VanillaGltfCreator(JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> currentAsset,
-            int currentBuffer, int currentBufferOffset) {
+    public VanillaGltfCreator(JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> currentAsset, int currentBuffer, int currentBufferOffset) {
         this.currentAsset = currentAsset;
         this.currentBuffer = currentBuffer;
         this.currentBufferOffset = currentBufferOffset;
@@ -131,7 +131,11 @@ public class VanillaGltfCreator implements GltfAssetCreator {
     }
 
     private void createBuffer(int capacity) {
-        currentBuffer = currentAsset.createBuffer("Buffer" + currentAsset.getBufferCount(), capacity);
+        createBuffer(capacity, "Buffer" + currentAsset.getBufferCount());
+    }
+
+    private void createBuffer(int capacity, String name) {
+        currentBuffer = currentAsset.createBuffer(name, capacity);
         currentBufferOffset = 0;
         currentBufferSize = capacity;
     }
@@ -350,11 +354,11 @@ public class VanillaGltfCreator implements GltfAssetCreator {
      * @param name
      */
     public int createAccessor(Object data, DataType dataType, Target target, String name, boolean calculateMinMax) {
-        if (currentBufferOffset + Buffers.getSizeInBytes(data) > currentBufferSize) {
-            createBuffer(currentBufferSize);
+        int dataSize = Buffers.getSizeInBytes(data);
+        if (currentBufferOffset + dataSize > currentBufferSize) {
+            createBuffer(Math.max(dataSize, defaultBufferSize), name);
         }
-        int accessorIndex = currentAsset.createAccessor(data, dataType, target, name, currentBufferOffset,
-                dataType.size, currentBuffer, calculateMinMax);
+        int accessorIndex = currentAsset.createAccessor(data, dataType, target, name, currentBufferOffset, dataType.size, currentBuffer, calculateMinMax);
         JSONAccessor accessor = currentAsset.getAccessor(accessorIndex);
         JSONBufferView bufferView = currentAsset.getBufferView(accessor);
         currentBufferOffset += bufferView.getByteLength();
@@ -368,7 +372,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
      * @param primitive
      * @return
      */
-    public JSONPrimitive flipPrimitive(JSONPrimitive primitive) {
+    public JSONPrimitive flipPrimitive(JSONPrimitive primitive, HashMap<Integer, Integer> flippedBufferViews) {
         if (primitive.getMode() != DrawMode.TRIANGLES) {
             throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + primitive.getMode());
         }
@@ -376,12 +380,17 @@ public class VanillaGltfCreator implements GltfAssetCreator {
         if (indices != null) {
             HashMap<Attributes, Integer> attributeMap = primitive.copyAttributeMap();
             int flippedIndex = flipIndices(indices);
-            int flippedNormals = flipNormals(primitive.getAccessor(Attributes.NORMAL));
-            if (flippedNormals != -1) {
-                attributeMap.put(Attributes.NORMAL, flippedNormals);
+            JSONAccessor normals = primitive.getAccessor(Attributes.NORMAL);
+            if (normals != null) {
+                // The bufferview holding the normals may be accessed by multiple primitives - flip all and save
+                Integer flippedBV = flippedBufferViews.get(normals.getBufferViewIndex());
+                if (flippedBV == null) {
+                    flippedBV = flipNormals(normals);
+                    flippedBufferViews.put(normals.getBufferViewIndex(), flippedBV);
+                }
+                attributeMap.put(Attributes.NORMAL, flippedBV);
             }
-            return currentAsset.createPrimitive(DrawMode.TRIANGLES, primitive.getMaterialIndex(), flippedIndex,
-                    attributeMap);
+            return currentAsset.createPrimitive(DrawMode.TRIANGLES, primitive.getMaterialIndex(), flippedIndex, attributeMap);
         } else {
             JSONAccessor pos = primitive.getAccessor(Attributes.POSITION);
             int flippedPos = flipPosition(pos);
@@ -398,8 +407,8 @@ public class VanillaGltfCreator implements GltfAssetCreator {
                         ErrorMessage.NOT_IMPLEMENTED.message + normals.getComponentType());
             }
             float[] data = flipNormalFloat(normals);
-            return createAccessor(data, DataType.vec3, Target.ARRAY_BUFFER, "FlippedNormals" + normals.getName(),
-                    false);
+            String normalsName = normals.getName() != null ? normals.getName() : "";
+            return createAccessor(data, DataType.vec3, Target.ARRAY_BUFFER, "FlippedNormals" + normalsName, false);
         }
         return -1;
     }
@@ -409,8 +418,8 @@ public class VanillaGltfCreator implements GltfAssetCreator {
             throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + position.getComponentType());
         }
         float[] data = flipPositionFloat(position);
-        return createAccessor(data, DataType.vec3, Target.ARRAY_BUFFER, "FlippedPosition" + position.getName(),
-                true);
+        String posName = position.getName() != null ? position.getName() : "";
+        return createAccessor(data, DataType.vec3, Target.ARRAY_BUFFER, "FlippedPosition" + posName, true);
     }
 
     private float[] flipNormalFloat(JSONAccessor normal) {
@@ -481,8 +490,8 @@ public class VanillaGltfCreator implements GltfAssetCreator {
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + ct);
         }
-        int accessorIndex = createAccessor(data, DataType.get(ct, Type.SCALAR), Target.ELEMENT_ARRAY_BUFFER,
-                "FlippedIndices" + indices.getName(), false);
+        String indicesName = indices.getName() != null ? indices.getName() : "";
+        int accessorIndex = createAccessor(data, DataType.get(ct, Type.SCALAR), Target.ELEMENT_ARRAY_BUFFER, "FlippedIndices" + indicesName, false);
         return accessorIndex;
     }
 

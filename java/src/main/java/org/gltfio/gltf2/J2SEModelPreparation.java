@@ -26,7 +26,7 @@ public class J2SEModelPreparation
 
     @Override
     public void prepareModel(JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> glTF, GltfSettings settings) {
-        int bufferIndex = glTF.createBuffer("ModelPrep", 5000000);
+        int bufferIndex = glTF.createBuffer("ModelPrep", 500000);
         VanillaGltfCreator creator = new VanillaGltfCreator(glTF, bufferIndex, 0);
         setTargetAndByteStride(glTF.getAccessors());
         duplicateDoubleSided(glTF, creator);
@@ -53,8 +53,8 @@ public class J2SEModelPreparation
     /**
      * Find primitives using doublesided material and duplicate/mirror
      */
-    private void duplicateDoubleSided(JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> glTF,
-            VanillaGltfCreator creator) {
+    private void duplicateDoubleSided(JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> glTF, VanillaGltfCreator creator) {
+        HashMap<Integer, Integer> flippedBufferViews = new HashMap<Integer, Integer>();
         JSONMesh[] meshes = glTF.getMeshes();
         ArrayList<JSONPrimitive> flippedList = new ArrayList<JSONPrimitive>();
         Gltf2TransientDelegator delegator = Gltf2TransientDelegator.getInstance();
@@ -66,7 +66,7 @@ public class J2SEModelPreparation
                 temp.clear();
                 for (JSONPrimitive primitive : primitives) {
                     if (primitive.getMaterial().doubleSided) {
-                        JSONPrimitive flippedPrimitive = creator.flipPrimitive(primitive);
+                        JSONPrimitive flippedPrimitive = creator.flipPrimitive(primitive, flippedBufferViews);
                         flippedList.add(flippedPrimitive);
                         temp.add(flippedPrimitive);
                         mesh.addPrimitives(temp);

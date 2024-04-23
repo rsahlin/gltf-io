@@ -457,8 +457,7 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
             VertexBufferBundle vertexBufferMap = new VertexBufferBundle();
             // Create an array of vertexbuffers for each streamifydata
             for (Integer key : streamifyMap.keySet()) {
-                StreamifyData sd = streamifyMap.get(key);
-                createVertexBuffers(key, sd, vertexBufferMap);
+                createVertexBuffers(key, streamifyMap.get(key), vertexBufferMap);
             }
             streamifyMap.clear();
             streamifyMap = null;
@@ -469,6 +468,7 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
             VertexBuffer[] vertexBuffers = new VertexBuffer[sd.attributeList.length];
             for (int i = 0; i < sd.attributeList.length; i++) {
                 ArrayList<AttributeData> data = sd.attributeList[i];
+                sd.attributeList[i] = null;
                 if (data != null && data.size() > 0) {
                     VertexBuffer vertexBuffer = new VertexBuffer(data, sd.getTotalCount(), sd.sortedAttributes[i], sd.dataTypes[i]);
                     vertexBuffers[i] = vertexBuffer;
@@ -502,6 +502,7 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
 
         private ArrayList<AttributeData>[] attributeList;
         private HashMap<Integer, Integer>[] accessorHashMap;
+        private HashMap<Integer, JSONBufferView> bufferViewMap = new HashMap<Integer, JSONBufferView>();
         private ArrayList<AttributeData>[] indices = new ArrayList[IndexType.values().length];
         private DataType[] dataTypes;
         private int[] totalCountTable;
@@ -544,15 +545,12 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
                             // datatype is matching - check offset
                             JSONBufferView bv = a.getBufferView();
                             if (data.byteOffset != bv.getByteOffset()) {
-                                Logger.d(getClass(), "Same position data but different attribute for "
-                                        + sortedAttributes[i] + ", unpack/copy to new index.");
+                                Logger.d(getClass(), "Same position data but different attribute for " + sortedAttributes[i] + ", unpack/copy to new index.");
                                 vertexIndex = null;
                                 break;
                             }
                             if (data.stride != bv.getByteStride()) {
-                                throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message
-                                        + "Existing stride does not match with current: " + data.stride + " - " +
-                                        bv.getByteStride());
+                                Logger.d(getClass(), "Existing stride does not match with current: " + data.stride + " - " + bv.getByteStride() + " for " + sortedAttributes[i] + ", unpack/copy to new index.");
                             }
                         }
                     }
@@ -560,6 +558,7 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
                 if (vertexIndex == null) {
                     // Set primitive index to be used in vertexbuffer
                     primitive.streamVertexIndex = attributeList[0].size();
+                    bufferViewMap.put(posAccessor.getBufferViewIndex(), primitive.getAccessor(Attributes.POSITION).getBufferView());
                     for (int i = 0; i < sortedAttributes.length; i++) {
                         Attributes attribute = sortedAttributes[i];
                         JSONAccessor accessor = primitive.getAccessor(attribute);
@@ -568,10 +567,7 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
                             if (accessor.getCount() != count) {
                                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Wrong count for attribute " + attribute + ", " + accessor.getCount() + " should be " + count);
                             }
-                            int hash = accessor.hashCode();
-                            if (posHash != hash) {
-                                accessorHashMap[i].put(hash, primitive.streamVertexIndex);
-                            }
+                            accessorHashMap[i].put(accessor.hashCode(), primitive.streamVertexIndex);
                             DataType dataType = DataType.get(accessor.getComponentType(), accessor.getType());
                             float[][] minMax = attribute == Attributes.POSITION ? new float[][] { accessor.getMin(), accessor.getMax() } : null;
                             AttributeData data = new AttributeData(accessor.getBuffer().asReadOnlyBuffer(), count, dataType, accessor.getBufferView().getByteOffset(), accessor.getBufferView().getByteStride(), totalCountTable[i], minMax);

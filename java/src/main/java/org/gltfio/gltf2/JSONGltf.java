@@ -848,19 +848,15 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
      * @param bufferIndex Index of buffer to use, or -1 to create a Buffer with capacity to hold data
      * @return Index of the created accessor
      */
-    public int createAccessor(Object data, DataType type, Target target, String name, int destOffset, int byteStride,
-            int bufferIndex, boolean calculateMinMax) {
+    public int createAccessor(Object data, DataType type, Target target, String name, int destOffset, int byteStride, int bufferIndex, boolean calculateMinMax) {
         org.gltfio.gltf2.JSONAccessor.Type accessorType = type.gltfType();
         int dataSize = type.size / accessorType.size;
         int dataLength = Buffers.getArrayLength(data);
         bufferIndex = bufferIndex == Constants.NO_VALUE ? createBuffer(name, dataLength * dataSize) : bufferIndex;
-        int bufferViewIndex = createBufferView(bufferIndex, dataLength * dataSize, name, destOffset, byteStride,
-                target);
-        JSONBufferView bufferView = bufferViews.get(bufferViewIndex);
+        int bufferViewIndex = createBufferView(bufferIndex, dataLength * dataSize, name, destOffset, byteStride, target);
+        JSONBufferView bufferView = getBufferView(bufferViewIndex);
         bufferView.putArray(data, type);
-        int accessorIndex = createAccessor(bufferView, 0, type.getComponentType(), dataLength / accessorType.size,
-                accessorType,
-                name);
+        int accessorIndex = createAccessor(bufferView, 0, type.getComponentType(), dataLength / accessorType.size, accessorType, name);
         if (calculateMinMax) {
             if (data.getClass().getComponentType() == Float.TYPE) {
                 JSONAccessor accessor = getAccessor(accessorIndex);
