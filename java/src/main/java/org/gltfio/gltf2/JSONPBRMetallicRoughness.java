@@ -59,6 +59,36 @@ public class JSONPBRMetallicRoughness extends BaseObject {
     }
 
     /**
+     * Returns the transmission color
+     * 
+     * @param result
+     * @return
+     */
+    public float[] getTransmissiveColor(float[] result) {
+        float tFactor = 1 - metallicFactor;
+        result[0] = (baseColorFactor[0] * tFactor);
+        result[1] = (baseColorFactor[1] * tFactor);
+        result[2] = (baseColorFactor[2] * tFactor);
+        result[3] = 1.0f;
+        return result;
+    }
+
+    /**
+     * Returns the reflective material color
+     * 
+     * @param result
+     * @return
+     */
+    public float[] getReflectiveColor(float[] result) {
+        float rFactor = 1 - metallicFactor;
+        result[0] = (baseColorFactor[0] * metallicFactor) + (1.0f * rFactor);
+        result[1] = (baseColorFactor[1] * metallicFactor) + (1.0f * rFactor);
+        result[2] = (baseColorFactor[2] * metallicFactor) + (1.0f * rFactor);
+        result[3] = 1.0f;
+        return result;
+    }
+
+    /**
      * Returns the base metallic factor
      * 
      * @return Base metallic factor
