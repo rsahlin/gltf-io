@@ -195,7 +195,7 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
 
         float distance = Math.max(b, bx) + result[2] / 2;
         Float nearValue = Settings.getInstance().getFloat(LaddaFloatProperties.CAMERA_NEAR);
-        float near = nearValue != null ? nearValue : Math.min(0.1f, distance / 10);
+        float near = nearValue != null ? nearValue : Math.min(0.1f, distance / 20);
         Perspective p = new Perspective(Constants.NO_VALUE, yFOV, distance * 4, near);
         JSONCamera camera = new JSONCamera(p, node);
         int cameraIndex = addCamera(camera);
