@@ -36,7 +36,10 @@ public class JSONTexture extends NamedValue {
         OCCLUSION(8, "OC"), // One texturechannel with Occlusion
         // ORM(16, "ORM"), //One texturechannel with ORM
         EMISSIVE(32, "EM"),
-        TRANSMISSION(64, "TR"); // One texturechannel with transmission texture
+        TRANSMISSION(64, "TR"),
+        COAT_ROUGHNESS(128, "CR"),
+        COAT_NORMAL(256, "CN"),
+        COAT_FACTOR(512, "CF");
 
         public final int value;
         public final String id;

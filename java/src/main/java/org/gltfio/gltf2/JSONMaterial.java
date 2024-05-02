@@ -9,6 +9,7 @@ import org.gltfio.gltf2.JSONTexture.NormalTextureInfo;
 import org.gltfio.gltf2.JSONTexture.TextureInfo;
 import org.gltfio.gltf2.extensions.GltfExtensions;
 import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
+import org.gltfio.gltf2.extensions.KHRMaterialsClearcoat;
 import org.gltfio.gltf2.extensions.KHRMaterialsEmissiveStrength;
 import org.gltfio.gltf2.extensions.KHRMaterialsIOR;
 import org.gltfio.gltf2.extensions.KHRMaterialsTransmission;
@@ -82,7 +83,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     private static final String ALPHA_CUTOFF = "alphaCutoff";
     private static final String DOUBLE_SIDED = "doubleSided";
 
-    public static final int PBR_TEXTURE_COUNT = 5;
+    public static final int PBR_TEXTURE_COUNT = 9;
 
     /**
      * This data must be aligned with how the data is used in shaders (Material)
@@ -137,6 +138,21 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     protected transient TextureInfo transmissionTextureInfo;
     protected transient JSONTexture transmissionTexture;
 
+    /**
+     * Clearcoat extension
+     */
+    protected transient Float clearcoatFactor;
+    protected transient Float clearcoatRoughnessFactor;
+    protected transient NormalTextureInfo clearcoatNormalTextureInfo;
+    protected transient JSONTexture clearcoatNormalTexture;
+    protected transient TextureInfo clearcoatTextureInfo;
+    protected transient JSONTexture clearcoatTexture;
+    protected transient TextureInfo clearcoatRoughnessTextureInfo;
+    protected transient JSONTexture clearcoatRoughnessTexture;
+
+    /**
+     * Resolved textures
+     */
     protected transient JSONTexture normalTexture;
     protected transient JSONTexture occlusionTexture;
     protected transient JSONTexture emissiveTexture;
@@ -288,10 +304,12 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
             pbrMetallicRoughness = new JSONPBRMetallicRoughness();
         }
         removeChannelsBySettings();
-        resolveTextureChannels();
         resolveIOR();
         resolveTransmission();
         resolveEmissiveStrength();
+        resolveClearcoat();
+        // Do this last
+        resolveTextureChannels();
     }
 
     private void resolveEmissiveStrength() {
@@ -309,14 +327,29 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     }
 
     private void resolveTransmission() {
-        KHRMaterialsTransmission transmission =
-                (KHRMaterialsTransmission) getExtension(ExtensionTypes.KHR_materials_transmission);
+        KHRMaterialsTransmission transmission = (KHRMaterialsTransmission) getExtension(ExtensionTypes.KHR_materials_transmission);
         if (transmission != null) {
             // Todo - use some other method to flag that transmission should be used
             alphaMode = AlphaMode.BLEND;
             absorbtion = 1.0f - transmission.getTransmissionFactor();
+            transmissionTextureInfo = transmission.getTransmissionTexture();
         } else {
-            absorbtion = pbrMetallicRoughness.metallicFactor;
+            if (alphaMode == AlphaMode.BLEND) {
+                absorbtion = pbrMetallicRoughness.getBaseColorFactor()[3];
+            } else {
+                absorbtion = pbrMetallicRoughness.metallicFactor;
+            }
+        }
+    }
+
+    private void resolveClearcoat() {
+        KHRMaterialsClearcoat clearcoat = (KHRMaterialsClearcoat) getExtension(ExtensionTypes.KHR_materials_clearcoat);
+        if (clearcoat != null) {
+            this.clearcoatFactor = clearcoat.getClearcoatFactor();
+            this.clearcoatRoughnessFactor = clearcoat.getClearcoatRoughnessFactor();
+            this.clearcoatNormalTextureInfo = clearcoat.getClearCoatNormalTexture();
+            this.clearcoatRoughnessTextureInfo = clearcoat.getClearCoatRoughnessTexture();
+            this.clearcoatTextureInfo = clearcoat.getClearCoatTexture();
         }
     }
 
@@ -419,6 +452,11 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
                 return occlusionTextureInfo;
             case TRANSMISSION:
                 return transmissionTextureInfo;
+            case COAT_NORMAL:
+                return clearcoatNormalTextureInfo;
+            case COAT_FACTOR:
+            case COAT_ROUGHNESS:
+                return null;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + channel);
         }
@@ -444,6 +482,10 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
                 return occlusionTexture;
             case TRANSMISSION:
                 return transmissionTexture;
+            case COAT_FACTOR:
+            case COAT_NORMAL:
+            case COAT_ROUGHNESS:
+                return null;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + channel);
         }
@@ -509,6 +551,24 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      */
     public float getIOR() {
         return ior;
+    }
+
+    /**
+     * Returns the clearcoatfactor or null if no coat layer
+     * 
+     * @return
+     */
+    public Float getClearcoatFactor() {
+        return clearcoatFactor;
+    }
+
+    /**
+     * Returns the clearcoat roughnessfactor or null if no coat layer
+     * 
+     * @return
+     */
+    public Float getClearcoatRoughnessFactor() {
+        return clearcoatRoughnessFactor;
     }
 
     /**
