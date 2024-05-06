@@ -463,23 +463,18 @@ public class JSONPrimitive extends BaseObject implements RuntimeObject {
         Channel[] textureChannels = getMaterial().getTextureChannels();
         DrawMode drawMode = getMode();
         AlphaMode alphaMode = getMaterial().getAlphaMode();
-        int pipelineHash = JSONPrimitive.getPipelineHash(hash, textureChannels, drawMode, alphaMode);
+        int pipelineHash = getPipelineHash(hash, textureChannels, drawMode, alphaMode, getMaterial().getClearcoatFactor());
         return pipelineHash;
     }
 
-    /**
-     * Returns the hash for the attributes, texture channels and drawmode
-     * 
-     * @param primitive
-     * @return
-     */
-    public static int getPipelineHash(int attributeHash, Channel[] textureChannels, DrawMode mode, AlphaMode alpha) {
+    private static int getPipelineHash(int attributeHash, Channel[] textureChannels, DrawMode mode, AlphaMode alpha, Float clearCoat) {
         final int prime = 31;
         int result = 1;
         result = prime * result + attributeHash;
         result = prime * result + BitFlags.getFlagsValue(textureChannels);
         result = prime * result + mode.value;
         result = prime * result + alpha.value;
+        result = prime * result + (clearCoat != null ? 1 : 0);
         return result;
     }
 

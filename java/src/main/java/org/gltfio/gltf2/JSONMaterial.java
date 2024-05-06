@@ -86,9 +86,11 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     public static final int PBR_TEXTURE_COUNT = 9;
 
     /**
+     * Number of bytes used for sampler data
      * This data must be aligned with how the data is used in shaders (Material)
+     * 
      */
-    public static final int SAMPLERS_DATA_LENGTH = PBR_TEXTURE_COUNT * 4;
+    public static final int SAMPLERS_DATA_BYTELENGTH = PBR_TEXTURE_COUNT * 4;
 
     public enum AlphaMode {
         OPAQUE((byte) 1),
@@ -134,7 +136,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      */
     protected transient Float emissiveStrength;
     protected transient float ior = 1.5f;
-    protected transient float absorbtion = 0;
+    protected transient float absorption = 0;
     protected transient TextureInfo transmissionTextureInfo;
     protected transient JSONTexture transmissionTexture;
 
@@ -158,7 +160,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     protected transient JSONTexture emissiveTexture;
     protected transient int textureChannelsValue;
     private transient Channel[] textureChannels;
-    protected final transient ByteBuffer samplersData = Buffers.createByteBuffer(SAMPLERS_DATA_LENGTH);
+    protected final transient ByteBuffer samplersData = Buffers.createByteBuffer(SAMPLERS_DATA_BYTELENGTH);
 
     protected JSONMaterial() {
         super();
@@ -331,13 +333,13 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         if (transmission != null) {
             // Todo - use some other method to flag that transmission should be used
             alphaMode = AlphaMode.BLEND;
-            absorbtion = 1.0f - transmission.getTransmissionFactor();
+            absorption = 1.0f - transmission.getTransmissionFactor();
             transmissionTextureInfo = transmission.getTransmissionTexture();
         } else {
             if (alphaMode == AlphaMode.BLEND) {
-                absorbtion = pbrMetallicRoughness.getBaseColorFactor()[3];
+                absorption = pbrMetallicRoughness.getBaseColorFactor()[3];
             } else {
-                absorbtion = pbrMetallicRoughness.metallicFactor;
+                absorption = pbrMetallicRoughness.metallicFactor;
             }
         }
     }
@@ -585,8 +587,25 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      * 
      * @return
      */
-    public float getAbsorbtion() {
-        return absorbtion;
+    public float getAbsorption() {
+        return absorption;
+    }
+
+    /**
+     * absorbfactor
+     * coatfactor
+     * coatroughness
+     * coat R0
+     * 
+     * @return
+     */
+    public float[] getProperties() {
+        float[] values = new float[4];
+        values[0] = absorption;
+        values[1] = clearcoatFactor != null ? clearcoatFactor : 0;
+        values[2] = clearcoatRoughnessFactor != null ? clearcoatRoughnessFactor : 0;
+        values[3] = (float) Math.pow((1.0f - 1.6f) / (1.0f + 1.6f), 2);
+        return values;
     }
 
     /**

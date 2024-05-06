@@ -6,6 +6,7 @@ import java.util.HashMap;
 import org.gltfio.data.VertexBuffer.VertexBufferBundle;
 import org.gltfio.gltf2.AttributeSorter;
 import org.gltfio.gltf2.JSONAccessor;
+import org.gltfio.gltf2.JSONMaterial;
 import org.gltfio.gltf2.JSONMaterial.AlphaMode;
 import org.gltfio.gltf2.JSONMesh;
 import org.gltfio.gltf2.JSONNode;
@@ -89,8 +90,7 @@ public class FlattenedScene {
     }
 
     public static class PrimitiveSorterMap {
-        private HashMap<Integer, PrimitiveSorter> primitivesByPipeline =
-                new HashMap<Integer, FlattenedScene.PrimitiveSorter>();
+        private HashMap<Integer, PrimitiveSorter> primitivesByPipeline = new HashMap<Integer, FlattenedScene.PrimitiveSorter>();
 
         /**
          * Returns pipeline from hash, or null
@@ -138,12 +138,7 @@ public class FlattenedScene {
             ArrayList<PrimitiveSorter> sorted = new ArrayList<PrimitiveSorter>();
             for (Integer key : primitivesByPipeline.keySet()) {
                 PrimitiveSorter s = primitivesByPipeline.get(key);
-                if (s.pipelineHash != 0) {
-                    throw new IllegalArgumentException(
-                            ErrorMessage.INVALID_VALUE.message + "Already sorted for hash " + s.pipelineHash);
-                }
-                s.pipelineHash = key;
-                if (s.alphaMode == AlphaMode.OPAQUE) {
+                if (s.getAlphaMode() == AlphaMode.OPAQUE) {
                     sorted.add(0, s);
                 } else {
                     sorted.add(s);
@@ -194,18 +189,17 @@ public class FlattenedScene {
         int[] indicesCount = new int[IndexType.values().length];
 
         public final Attributes[] sortedAttributes;
-        public final Channel[] textureChannels;
+        private final JSONMaterial material;
         public final DrawMode mode;
-        public final AlphaMode alphaMode;
         public final int attributeHash;
         private int primitiveCount;
-        private int pipelineHash;
+        private final int pipelineHash;
 
         private PrimitiveSorter(Attributes[] sortedAttributes, JSONPrimitive primitive) {
+            this.pipelineHash = primitive.getPipelineHash();
             this.sortedAttributes = sortedAttributes;
-            this.textureChannels = primitive.getMaterial().getTextureChannels();
+            this.material = primitive.getMaterial();
             this.mode = primitive.getMode();
-            alphaMode = primitive.getMaterial().getAlphaMode();
             this.attributeHash = primitive.getAttributeHash();
             for (int i = 0; i < indexedPrimitives.length; i++) {
                 indexedPrimitives[i] = new ArrayList<JSONPrimitive>();
@@ -214,13 +208,8 @@ public class FlattenedScene {
         }
 
         private void add(JSONNode<JSONMesh<JSONPrimitive>> node, JSONPrimitive primitive) {
-            if (primitive.getAttributeHash() != attributeHash) {
-                throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message
-                        + "Can not add primitive with different attribute set");
-            }
-            if (primitive.getMaterial().getAlphaMode() != alphaMode) {
-                throw new IllegalArgumentException(
-                        ErrorMessage.INVALID_VALUE.message + "Cannot add primitive with different alphamode");
+            if (primitive.getPipelineHash() != pipelineHash) {
+                throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Can not add primitive with different pipeline hash");
             }
             JSONAccessor indices = primitive.getIndices();
             if (indices == null) {
@@ -233,6 +222,33 @@ public class FlattenedScene {
                 indexedMatrixIndexes[type.index].add(node.getMatrixIndex());
             }
             primitiveCount++;
+        }
+
+        /**
+         * Returns the material
+         * 
+         * @return
+         */
+        public JSONMaterial getMaterial() {
+            return material;
+        }
+
+        /**
+         * Returns the material alpha mode
+         * 
+         * @return
+         */
+        public AlphaMode getAlphaMode() {
+            return material.getAlphaMode();
+        }
+
+        /**
+         * Returns the texture channels
+         * 
+         * @return
+         */
+        public Channel[] getTextureChannels() {
+            return material.getTextureChannels();
         }
 
         public int getPrimitiveCount() {
@@ -264,8 +280,7 @@ public class FlattenedScene {
         }
 
         public int[] getIndexedMatrixIndexes(IndexType type) {
-            return indexedMatrixIndexes[type.index] != null ? indexedMatrixIndexes[type.index].stream().mapToInt(i -> i)
-                    .toArray() : null;
+            return indexedMatrixIndexes[type.index] != null ? indexedMatrixIndexes[type.index].stream().mapToInt(i -> i).toArray() : null;
         }
 
         public int[] getArrayMatrixIndexes() {
@@ -287,8 +302,7 @@ public class FlattenedScene {
          * @return
          */
         public int[] getIndexedPrimitiveCount() {
-            return new int[] { indexedPrimitives[IndexType.BYTE.index].size(), indexedPrimitives[IndexType.SHORT.index]
-                    .size(), indexedPrimitives[IndexType.INT.index].size() };
+            return new int[] { indexedPrimitives[IndexType.BYTE.index].size(), indexedPrimitives[IndexType.SHORT.index].size(), indexedPrimitives[IndexType.INT.index].size() };
         }
 
         /**
@@ -320,13 +334,11 @@ public class FlattenedScene {
 
     }
 
-    private PrimitiveSorter getPrimitivesByPipeline(PrimitiveSorterMap primitivesByPipelineHash,
-            JSONPrimitive primitive) {
+    private PrimitiveSorter getPrimitivesByPipeline(PrimitiveSorterMap primitivesByPipelineHash, JSONPrimitive primitive) {
         int pipelineHash = primitive.getPipelineHash();
         PrimitiveSorter result = primitivesByPipelineHash.getByPipeline(pipelineHash);
         if (result == null) {
-            result = new PrimitiveSorter(AttributeSorter.getInstance().sortAttributes(primitive.getAttributes()),
-                    primitive);
+            result = new PrimitiveSorter(AttributeSorter.getInstance().sortAttributes(primitive.getAttributes()), primitive);
             primitivesByPipelineHash.putByPipeline(pipelineHash, result);
         }
         return result;
