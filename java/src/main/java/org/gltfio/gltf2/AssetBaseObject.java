@@ -148,14 +148,16 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
      * Creates a default perspective projection camera, the camera will be added to list of cameras.
      * Camera will have a Node
      * 
+     * @return The index of the created camera
      */
-    public void addRuntimeCamera(String name, MinMax bounds, Alignment align, float aspect, RenderableScene scene) {
+    public int addRuntimeCamera(String name, MinMax bounds, Alignment align, float aspect, RenderableScene scene) {
         // Setup a default projection
         JSONNode<?> node = createNode(name, -1);
-        selectedCamera = createCamera(name, bounds, align, aspect, scene, node);
-        JSONCamera camera = getCamera(selectedCamera);
+        int cameraIndex = createCamera(name, bounds, align, aspect, scene, node);
+        JSONCamera camera = getCamera(cameraIndex);
         node.setRuntimeCamera(camera);
         addInstanceCamera(camera);
+        return cameraIndex;
     }
 
     /**
@@ -172,22 +174,6 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
         float[] result = new float[3];
         bounds.getMaxDelta(result);
         Logger.d(getClass(), "Model scene is: " + result[0] + ", " + result[1] + ", " + result[2] + " meters");
-        float centerX = (-result[0] / 2) - bounds.min[0];
-        float centerY = (-result[1] / 2) - bounds.min[1];
-        float centerZ = (-result[2] / 2) - bounds.min[2];
-        switch (align) {
-            case BOTTOM:
-                centerY -= result[1] / 2;
-                break;
-            case CENTER:
-                break;
-            case TOP:
-                centerY += result[1] / 2;
-                break;
-            default:
-                throw new IllegalArgumentException(align.name());
-        }
-
         float b = (result[1] / 2) / (float) Math.tan(yFOV / 2);
         // TODO - use proper aspect?
         // Probably not since we start with a given screensize.
@@ -201,7 +187,24 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
         int cameraIndex = addCamera(camera);
         node.setCameraIndex(cameraIndex);
         camera.translateCamera(0, 0, distance);
-        scene.getSceneTransform().translate(centerX, centerY, centerZ);
+        if (align != null) {
+            float centerX = (-result[0] / 2) - bounds.min[0];
+            float centerY = (-result[1] / 2) - bounds.min[1];
+            float centerZ = (-result[2] / 2) - bounds.min[2];
+            switch (align) {
+                case BOTTOM:
+                    centerY -= result[1] / 2;
+                    break;
+                case CENTER:
+                    break;
+                case TOP:
+                    centerY += result[1] / 2;
+                    break;
+                default:
+                    throw new IllegalArgumentException(align.name());
+            }
+            camera.translateCamera(-centerX, -centerY, -centerZ);
+        }
         return cameraIndex;
     }
 
@@ -258,8 +261,7 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
      * @param children
      * @return
      */
-    public JSONNode createNode(String name, int mesh, float[] translation, float[] rotation, float[] scale,
-            int... children) {
+    public JSONNode createNode(String name, int mesh, float[] translation, float[] rotation, float[] scale, int... children) {
         return new JSONNode(name, mesh, translation, rotation, scale, children);
     }
 

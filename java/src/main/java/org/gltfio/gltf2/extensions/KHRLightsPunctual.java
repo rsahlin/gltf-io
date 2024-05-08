@@ -254,16 +254,23 @@ public class KHRLightsPunctual extends JSONExtension {
     }
 
     /**
-     * Sets the rotation of the node so that the directional light is coming position
+     * Sets the rotation of the node so that the directional light is coming from position
      */
     public static void setNodeRotation(JSONNode node, float[] position) {
-        float xAxisAngle = Vec2.getAngle(position[2], position[1]);
-        float yAxisAngle = Vec2.getAngle(position[2], position[0]);
+        float xAxisAngle = Math.abs(Vec2.getAngle(position[2], position[1]));
+        if (xAxisAngle != 0.0f) {
+            xAxisAngle = position[2] < 0.0f ? xAxisAngle + (float) (Math.PI / 2) : xAxisAngle;
+            xAxisAngle = position[1] < 0.0f ? -xAxisAngle : xAxisAngle;
+        }
+        float yAxisAngle = Math.abs(Vec2.getAngle(position[2], position[0]));
+        if (yAxisAngle != 0.0f) {
+            yAxisAngle = position[2] < 0.0f ? yAxisAngle + (float) (Math.PI / 2) : yAxisAngle;
+            yAxisAngle = position[0] < 0.0f ? -yAxisAngle : yAxisAngle;
+        }
         float[] quat = new float[4];
         Quaternion.setXYZAxisRotation(-xAxisAngle, yAxisAngle, 0, quat);
         node.getTransform().setRotation(quat);
         node.getTransform().updateMatrix();
-        node.setJSONRotation(quat);
     }
 
 }

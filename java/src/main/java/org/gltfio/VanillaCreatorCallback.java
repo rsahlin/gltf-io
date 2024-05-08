@@ -7,17 +7,16 @@ import org.gltfio.VanillaGltfCreator.CreatorCallback;
 import org.gltfio.VanillaGltfCreator.RGB;
 import org.gltfio.VanillaGltfCreator.RM;
 import org.gltfio.gltf2.JSONMaterial.AlphaMode;
-import org.gltfio.gltf2.JSONMesh;
 import org.gltfio.gltf2.JSONNode;
 import org.gltfio.gltf2.JSONPrimitive;
 import org.gltfio.gltf2.JSONPrimitive.Attributes;
 import org.gltfio.gltf2.MinMax;
 import org.gltfio.gltf2.extensions.JSONExtension;
-import org.gltfio.gltf2.extensions.KHRLightsPunctual;
 import org.gltfio.gltf2.extensions.KHRLightsPunctual.Light;
 import org.gltfio.gltf2.extensions.KHRMaterialsIOR;
 import org.gltfio.gltf2.extensions.KHRMaterialsTransmission;
 import org.gltfio.gltf2.stream.PrimitiveStream.IndexType;
+import org.gltfio.lib.Quaternion;
 import org.gltfio.lib.Transform;
 import org.gltfio.prepare.GltfSettings.Alignment;
 
@@ -50,6 +49,47 @@ public class VanillaCreatorCallback implements CreatorCallback {
             new float[] { -1f, 1f, 0f },
             new float[] { 0f, 1f, 0f },
             new float[] { 1f, 1f, 0f }
+    };
+
+    float[][] fresnelColorTable = new float[][] {
+            new float[] { 0.9f, 0.1f, 0f },
+            new float[] { 0.9f, 0.1f, 0f },
+            new float[] { 0.9f, 0.1f, 0f },
+            new float[] { 0.1f, 0.9f, 0f },
+            new float[] { 0.1f, 0.9f, 0f },
+            new float[] { 0.1f, 0.9f, 0f },
+            new float[] { 0f, 0.1f, 0.9f },
+            new float[] { 0f, 0.1f, 0.9f },
+            new float[] { 0f, 0.1f, 0.9f },
+            new float[] { 0.9f, 0f, 0f },
+            new float[] { 0f, 0.9f, 0f },
+            new float[] { 0f, 0f, 0.9f },
+            new float[] { 0.75f, 0.2f, 0.1f },
+            new float[] { 0.2f, 0.75f, 0.05f },
+            new float[] { 0.1f, 0.3f, 0.75f },
+    };
+    float[][] fresnelOffsetTable = new float[][] {
+            new float[] { -1.1f, -1.5f, 0f },
+            new float[] { 0f, -1.5f, 0f },
+            new float[] { 1.1f, -1.5f, 0f },
+            new float[] { -1.1f, 0f, -1f },
+            new float[] { 0f, 0f, -1f },
+            new float[] { 1.1f, 0f, -1f },
+            new float[] { -1.1f, 1f, -1f },
+            new float[] { 0f, 1f, -1f },
+            new float[] { 1.1f, 1f, -1f }
+    };
+
+    RM[] fresnelRMTable = new RM[] {
+            new RM(0.0f, 0.0f),
+            new RM(0.5f, 0.0f),
+            new RM(1.0f, 0.0f),
+            new RM(0.0f, 0.0f),
+            new RM(0.5f, 0.0f),
+            new RM(1.0f, 0.0f),
+            new RM(0.0f, 0.0f),
+            new RM(0.5f, 0.0f),
+            new RM(1.0f, 0.0f),
     };
 
     float[][] rgbaTableSame = new float[][] {
@@ -88,9 +128,9 @@ public class VanillaCreatorCallback implements CreatorCallback {
         // createLargeIndexed(creator, 200);
         // createTexCoordPrimitive(creator);
         // createManyInstances(creator);
-        createTransmissionQuads(creator, false);
+        // createTransmissionQuads(creator, false);
         // createDielectricIOR(creator);
-        // createQuads(creator);
+        roughnessFresnelTest(creator);
     }
 
     private void createQuads(VanillaGltfCreator creator) {
@@ -104,10 +144,7 @@ public class VanillaCreatorCallback implements CreatorCallback {
             nodes[i] = creator.getNode(nodeIndexes[i]);
         }
         int sceneIndex = creator.createScene("Light usecase scene", nodeIndexes);
-        int lightIndex = creator.createNode("LightNode", -1, null, null, null);
-        JSONNode<JSONMesh<?>> lightNode = creator.getNode(lightIndex);
-        KHRLightsPunctual.setNodeRotation(lightNode, new float[] { 0, 0, 10000 });
-        creator.addLight(sceneIndex, lightIndex, Light.Type.directional, new float[] { 1, 1f, 0f, }, 600);
+        int lightIndex = creator.createLight(sceneIndex, "LightNode", new float[] { 0, 0, 10000 }, new float[] { 1, 1f, 0f, }, 600);
         MinMax bounds = new MinMax(new float[] { -1.5f, -1.5f, 0 }, new float[] { 1.5f, 1.5f, 0 });
         int nodeIndex = creator.addCamera("Usecase Camera", bounds, Alignment.CENTER, sceneIndex);
         JSONNode cameraNode = creator.getNode(nodeIndex);
@@ -119,6 +156,39 @@ public class VanillaCreatorCallback implements CreatorCallback {
         }
     }
 
+    private void roughnessFresnelTest(VanillaGltfCreator creator) {
+        JSONPrimitive[] primitives = createQuadPrimitives(creator, 9, fresnelColorTable, fresnelRMTable, null, null);
+        int[] nodeIndexes = new int[primitives.length];
+        JSONNode[] nodes = new JSONNode[primitives.length];
+        float[] rotation = new float[4];
+        for (int i = 0; i < primitives.length; i++) {
+            switch (i) {
+                case 0:
+                    Quaternion.setXAxisRotation((float) -Math.PI / 2, rotation);
+                    break;
+                case 3:
+                    Quaternion.setXAxisRotation(0, rotation);
+                    break;
+                case 6:
+                    Quaternion.setXAxisRotation((float) -Math.PI / 6, rotation);
+                    break;
+                default:
+                    // Do nothing
+            }
+            int meshIndex = creator.createMesh(primitives[i]);
+            nodeIndexes[i] = creator.createNode("Node" + Integer.toString(i), meshIndex, fresnelOffsetTable[i], rotation, null, null);
+            nodes[i] = creator.getNode(nodeIndexes[i]);
+        }
+        int sceneIndex = creator.createScene("Roughness Fresnel testscene", nodeIndexes);
+        int lightIndex = creator.createLight(sceneIndex, "LightNode", new float[] { 0, 10000, 10000 }, new float[] { 1, 1f, 1f, }, 1);
+
+        MinMax bounds = new MinMax(new float[] { -1.5f, -1.5f, 0 }, new float[] { 1.5f, 1.5f, 0 });
+        int nodeIndex = creator.addCamera("Usecase Camera", bounds, null, sceneIndex);
+        JSONNode cameraNode = creator.getNode(nodeIndex);
+        float[] position = cameraNode.getTransform().getTranslate();
+        position[2] = position[2] * 2;
+    }
+
     private void createDielectricIOR(VanillaGltfCreator creator) {
         // First create materials.
         KHRMaterialsIOR[] ior = new KHRMaterialsIOR[] { new KHRMaterialsIOR(1.1f), new KHRMaterialsIOR(1.5f),
@@ -127,10 +197,7 @@ public class VanillaCreatorCallback implements CreatorCallback {
         addMaterialExtensions(creator, materials, ior.length, 0, ior);
         int[] meshIndexes = createBoxeNodes(creator, 3, 0, "BoxNode", materials, offsetTable);
         int sceneIndex = creator.createScene("DielectricIOR", meshIndexes);
-        int lightIndex = creator.createNode("LightNode", -1, null, null, null);
-        JSONNode<JSONMesh<?>> lightNode = creator.getNode(lightIndex);
-        KHRLightsPunctual.setNodeRotation(lightNode, new float[] { 0, 10000, 10000 });
-        creator.addLight(sceneIndex, lightIndex, Light.Type.directional, new float[] { 1, 1, 1, }, 3140);
+        int lightIndex = creator.createLight(sceneIndex, "LightNode", new float[] { 0, 10000, 10000 }, new float[] { 1, 1, 1, }, 3140);
     }
 
     private void addMaterialExtensions(VanillaGltfCreator creator, int[] materials, int count, int index,
@@ -148,13 +215,10 @@ public class VanillaCreatorCallback implements CreatorCallback {
         return result;
     }
 
-    private int[] createMaterials(VanillaGltfCreator creator, int count, int index, float[][] baseColors, RM[] rms,
-            boolean[] doubleSided, AlphaMode[] alphaMode) {
+    private int[] createMaterials(VanillaGltfCreator creator, int count, int index, float[][] baseColors, RM[] rms, boolean[] doubleSided, AlphaMode[] alphaMode) {
         int[] result = new int[count];
         for (int i = 0; i < count; i++) {
-            result[i] = creator.createMaterial(new RGB(baseColors[i + index]), rms != null ? rms[i + index] : null,
-                    doubleSided != null ? doubleSided[i + index] : false,
-                    alphaMode != null ? alphaMode[i + index] : AlphaMode.OPAQUE);
+            result[i] = creator.createMaterial(new RGB(baseColors[i + index]), rms != null ? rms[i + index] : null, doubleSided != null ? doubleSided[i + index] : false, alphaMode != null ? alphaMode[i + index] : AlphaMode.OPAQUE);
         }
         return result;
     }
@@ -178,15 +242,12 @@ public class VanillaCreatorCallback implements CreatorCallback {
         return result;
     }
 
-    private JSONPrimitive[] createQuadPrimitives(VanillaGltfCreator creator, int count, float[][] rgb, RM[] rm,
-            boolean[] doubleSided, AlphaMode[] alphaMode) {
+    private JSONPrimitive[] createQuadPrimitives(VanillaGltfCreator creator, int count, float[][] rgb, RM[] rm, boolean[] doubleSided, AlphaMode[] alphaMode) {
         JSONPrimitive[] result = new JSONPrimitive[count];
-        float[] arrayQuad = Shapes.getTransformed(Shapes.INDEXED_QUAD_INDICES, Shapes.INDEXED_BOX_VERTICES,
-                null, null);
+        float[] arrayQuad = Shapes.getTransformed(Shapes.INDEXED_QUAD_INDICES, Shapes.INDEXED_BOX_VERTICES, null, null);
         HashMap<Attributes, Object> attributeMap = new HashMap<JSONPrimitive.Attributes, Object>();
         attributeMap.put(Attributes.POSITION, arrayQuad);
-        float[] colorArray =
-                createFloatArray(arrayQuad.length, new float[] { 1f, 1f, 1f }, new float[] { 0, 0, 0 });
+        float[] colorArray = createFloatArray(arrayQuad.length, new float[] { 1f, 1f, 1f }, new float[] { 0, 0, 0 });
         attributeMap.put(Attributes.COLOR_0, colorArray);
 
         int[] materialIndexes = createMaterials(creator, count, 0, rgb, rm, doubleSided, alphaMode);

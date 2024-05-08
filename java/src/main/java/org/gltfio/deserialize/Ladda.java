@@ -400,8 +400,7 @@ public class Ladda {
             }
             String number = "";
             for (int i = 0; i < 8; i++) {
-                String[] directionalLight =
-                        set.getStringArray(set.getProperty(LaddaProperties.DIRECTIONAL_LIGHT.getKey() + number), "|");
+                String[] directionalLight = set.getStringArray(set.getProperty(LaddaProperties.DIRECTIONAL_LIGHT.getKey() + number), "|");
                 if (directionalLight != null) {
                     createDirectionalLight(scene, directionalLight);
                 }

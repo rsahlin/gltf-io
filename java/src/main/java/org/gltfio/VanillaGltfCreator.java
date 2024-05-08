@@ -24,6 +24,7 @@ import org.gltfio.gltf2.MinMax;
 import org.gltfio.gltf2.VanillaGltf;
 import org.gltfio.gltf2.VanillaGltf.VanillaScene;
 import org.gltfio.gltf2.extensions.JSONExtension;
+import org.gltfio.gltf2.extensions.KHRLightsPunctual;
 import org.gltfio.gltf2.extensions.KHRLightsPunctual.Light;
 import org.gltfio.gltf2.stream.PrimitiveStream.IndexType;
 import org.gltfio.gltf2.stream.SubStream.DataType;
@@ -283,8 +284,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
      */
     public JSONPrimitive createIndexedPrimitive(int materialIndex, HashMap<Attributes, Object> vertexData, int[] indices, IndexType indexType) {
         HashMap<Attributes, Integer> attributeMap = createAttributeMap(vertexData);
-        int indiceIndex = createAccessor(Shapes.getIndices(indices, indexType), indexType.dataType,
-                Target.ELEMENT_ARRAY_BUFFER, "indexboxindices", false);
+        int indiceIndex = createAccessor(Shapes.getIndices(indices, indexType), indexType.dataType, Target.ELEMENT_ARRAY_BUFFER, "indexboxindices", false);
         return currentAsset.createPrimitive(DrawMode.TRIANGLES, materialIndex, indiceIndex, attributeMap);
     }
 
@@ -295,12 +295,29 @@ public class VanillaGltfCreator implements GltfAssetCreator {
      * @param mesh
      * @return
      */
-    public int createNode(String name, int mesh, float[] translation, float[] rotation, float[] scale,
-            int... children) {
-        JSONNode node =
-                currentAsset.createNode(name, mesh, translation, rotation, scale, children);
+    public int createNode(String name, int mesh, float[] translation, float[] rotation, float[] scale, int... children) {
+        JSONNode node = currentAsset.createNode(name, mesh, translation, rotation, scale, children);
         int nodeIndex = currentAsset.addNode(node);
         return nodeIndex;
+    }
+
+    /**
+     * Creates a light node
+     * 
+     * @param sceneIndex
+     * @param nodeName
+     * @param lightPosition
+     * @param lightColor
+     * @param lightIntensity
+     * @return
+     */
+    public int createLight(int sceneIndex, String nodeName, float[] lightPosition, float[] lightColor, float lightIntensity) {
+        int lightIndex = createNode(nodeName, -1, null, null, null);
+        JSONNode<JSONMesh<?>> lightNode = getNode(lightIndex);
+        KHRLightsPunctual.setNodeRotation(lightNode, lightPosition);
+        addLight(sceneIndex, lightIndex, Light.Type.directional, lightColor, lightIntensity);
+        lightNode.setJSONRotation(lightNode.getTransform().getRotation());
+        return lightIndex;
     }
 
     /**
@@ -337,8 +354,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
      * @return The index of the created material
      */
     public int createMaterial(RGB baseColor, RM rm, boolean doubleSided, AlphaMode alpha) {
-        JSONMaterial material = new JSONMaterial("material" + Integer.toString(currentAsset.getMaterialCount()),
-                doubleSided, alpha);
+        JSONMaterial material = new JSONMaterial("material" + Integer.toString(currentAsset.getMaterialCount()), doubleSided, alpha);
         material.getPbrMetallicRoughness().setBasecolorFactor(baseColor.rgba);
         material.getPbrMetallicRoughness().setRMFactor(rm != null ? rm.rm : new float[] { 0f, 0f });
         return currentAsset.addMaterial(material);
@@ -612,7 +628,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
         int nodeIndex = createNode("Camera node", -1, new float[] { 0, 0, 0 }, null, null);
         JSONScene scene = currentAsset.getScene(sceneIndex);
         JSONNode node = currentAsset.getNode(nodeIndex);
-        int cameraIndex = currentAsset.createCamera(name, bounds, Alignment.CENTER, Settings.getInstance().getFloat(Settings.PlatformFloatProperties.DISPLAY_ASPECT), scene, node);
+        int cameraIndex = currentAsset.createCamera(name, bounds, align, Settings.getInstance().getFloat(Settings.PlatformFloatProperties.DISPLAY_ASPECT), scene, node);
         node.setJSONTRS(node.getTransform());
         scene.addNodeIndex(nodeIndex);
         return nodeIndex;

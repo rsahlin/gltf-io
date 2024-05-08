@@ -510,8 +510,7 @@ public class Vec3 extends VecMath {
      * @param rIndex
      * @preturn The result array
      */
-    public static final float[] add(float[] vector1, int v1Index, float[] vector2, int v2Index, float[] result,
-            int rIndex) {
+    public static final float[] add(float[] vector1, int v1Index, float[] vector2, int v2Index, float[] result, int rIndex) {
         result[rIndex++] = vector1[v1Index++] + vector2[v2Index++];
         result[rIndex++] = vector1[v1Index++] + vector2[v2Index++];
         result[rIndex] = vector1[v1Index] + vector2[v2Index];

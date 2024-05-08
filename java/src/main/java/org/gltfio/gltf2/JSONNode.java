@@ -143,12 +143,48 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
      */
     protected JSONNode(String name, int mesh, float[] translation, float[] rotation, float[] scale, int... children) {
         this.name = name;
-        this.translation = translation;
         setMesh(mesh);
-        this.rotation = rotation;
-        this.scale = scale;
+        setTranslation(translation);
+        setRotation(rotation);
+        setScale(scale);
         this.children = children != null && children.length > 0 ? children : null;
         this.transform = new Transform();
+    }
+
+    /**
+     * Sets the json rotation values
+     * 
+     * @param rotation
+     */
+    private void setRotation(float[] rotation) {
+        if (rotation != null) {
+            this.rotation = new float[4];
+            System.arraycopy(rotation, 0, this.rotation, 0, this.rotation.length);
+        }
+    }
+
+    /**
+     * Sets the json scale values
+     * 
+     * @param scale
+     */
+    private void setScale(float[] scale) {
+        if (scale != null) {
+            this.scale = new float[3];
+            System.arraycopy(scale, 0, this.scale, 0, this.scale.length);
+        }
+    }
+
+    /**
+     * Sets the json translate values
+     * 
+     * @param translation
+     */
+    private void setTranslation(float[] translation) {
+        if (translation != null) {
+            this.translation = new float[3];
+            System.arraycopy(translation, 0, this.translation, 0, this.translation.length);
+        }
     }
 
     /**
@@ -575,8 +611,7 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
      */
     public Transform getTransform() {
         if (transform == null) {
-            throw new IllegalArgumentException(
-                    ErrorMessage.INVALID_STATE.message + "Transform is null - node not created correct way");
+            throw new IllegalArgumentException(ErrorMessage.INVALID_STATE.message + "Transform is null - node not created correct way");
         }
         return transform;
     }

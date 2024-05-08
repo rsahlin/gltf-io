@@ -231,14 +231,10 @@ public abstract class MatrixUtils extends VecMath {
      * @param destOffset Offset into destVec where values are written
      * @return destVec
      */
-    public static final float[] mulVec3(float[] matrix, float[] vec, int sourceOffset, float[] destVec,
-            int destOffset) {
-        destVec[0 + destOffset] = vec[0 + sourceOffset] * matrix[0] + vec[1 + sourceOffset] * matrix[1]
-                + vec[2 + sourceOffset] * matrix[2] + matrix[3];
-        destVec[1 + destOffset] = vec[0 + sourceOffset] * matrix[4] + vec[1 + sourceOffset] * matrix[5]
-                + vec[2 + sourceOffset] * matrix[6] + matrix[7];
-        destVec[2 + destOffset] = vec[0 + sourceOffset] * matrix[8] + vec[1 + sourceOffset] * matrix[9]
-                + vec[2 + sourceOffset] * matrix[10] + matrix[11];
+    public static final float[] mulVec3(float[] matrix, float[] vec, int sourceOffset, float[] destVec, int destOffset) {
+        destVec[0 + destOffset] = vec[0 + sourceOffset] * matrix[0] + vec[1 + sourceOffset] * matrix[1] + vec[2 + sourceOffset] * matrix[2] + matrix[3];
+        destVec[1 + destOffset] = vec[0 + sourceOffset] * matrix[4] + vec[1 + sourceOffset] * matrix[5] + vec[2 + sourceOffset] * matrix[6] + matrix[7];
+        destVec[2 + destOffset] = vec[0 + sourceOffset] * matrix[8] + vec[1 + sourceOffset] * matrix[9] + vec[2 + sourceOffset] * matrix[10] + matrix[11];
         return destVec;
     }
 
@@ -700,8 +696,7 @@ public abstract class MatrixUtils extends VecMath {
      */
     public static final float[] setQuaternionRotation(float[] quaternion, float[] matrix, int offset) {
         if (quaternion != null) {
-            float norm = quaternion[0] * quaternion[0] + quaternion[1] * quaternion[1] + quaternion[2] * quaternion[2]
-                    + quaternion[3] * quaternion[3];
+            float norm = quaternion[0] * quaternion[0] + quaternion[1] * quaternion[1] + quaternion[2] * quaternion[2] + quaternion[3] * quaternion[3];
             float s = (norm == 1f) ? 2f : (norm > 0f) ? 2f / norm : 0;
             float xs = quaternion[0] * s;
             float ys = quaternion[1] * s;

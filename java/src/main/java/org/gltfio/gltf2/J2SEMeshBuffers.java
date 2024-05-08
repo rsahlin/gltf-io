@@ -172,8 +172,7 @@ public class J2SEMeshBuffers extends MeshBuffers {
     final HashMap<JSONAccessor, float[]> uvCoord0 = new HashMap<JSONAccessor, float[]>();
     final HashMap<JSONAccessor, float[]> uvCoord1 = new HashMap<JSONAccessor, float[]>();
 
-    final HashMap<JSONPrimitive, PrimitiveBuffer> primitiveBuffers =
-            new HashMap<JSONPrimitive, J2SEMeshBuffers.PrimitiveBuffer>();
+    final HashMap<JSONPrimitive, PrimitiveBuffer> primitiveBuffers = new HashMap<JSONPrimitive, J2SEMeshBuffers.PrimitiveBuffer>();
 
     /**
      * Map of array holding created tangents, one for each Accessor
@@ -227,9 +226,7 @@ public class J2SEMeshBuffers extends MeshBuffers {
                     primitive.addAccessor(Attributes.NORMAL, createdIndex, normalAccessor);
                 }
                 if (normalAccessor.componentType != ComponentType.FLOAT) {
-                    throw new IllegalArgumentException(
-                            ErrorMessage.INVALID_VALUE.message + "ComponentType not supported: "
-                                    + normalAccessor.componentType);
+                    throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "ComponentType not supported: " + normalAccessor.componentType);
                 }
                 normalAccessor.put(createdNormals, 0, createdNormals.length);
             }
