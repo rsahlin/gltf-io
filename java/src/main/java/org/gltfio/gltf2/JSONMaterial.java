@@ -306,12 +306,6 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
             pbrMetallicRoughness = new JSONPBRMetallicRoughness();
         }
         removeChannelsBySettings();
-        resolveIOR();
-        resolveTransmission();
-        resolveEmissiveStrength();
-        resolveClearcoat();
-        // Do this last
-        resolveTextureChannels();
     }
 
     private void resolveEmissiveStrength() {
@@ -339,7 +333,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
             if (alphaMode == AlphaMode.BLEND) {
                 absorption = pbrMetallicRoughness.getBaseColorFactor()[3];
             } else {
-                absorption = pbrMetallicRoughness.metallicFactor;
+                absorption = (1.0f - pbrMetallicRoughness.metallicFactor) * 0.9f + pbrMetallicRoughness.metallicFactor * 1f;
             }
         }
     }
@@ -355,7 +349,13 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         }
     }
 
-    private void resolveTextureChannels() {
+    /**
+     * Sets the texturechannels value from available texture infos - only call once!
+     */
+    void setTextureChannelsValue() {
+        if (textureChannelsValue != 0) {
+            throw new IllegalArgumentException();
+        }
         for (Channel channel : Channel.values()) {
             TextureInfo textureInfo = getTextureInfo(channel);
             if (textureInfo != null) {
@@ -457,8 +457,9 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
             case COAT_NORMAL:
                 return clearcoatNormalTextureInfo;
             case COAT_FACTOR:
+                return clearcoatTextureInfo;
             case COAT_ROUGHNESS:
-                return null;
+                return clearcoatRoughnessTextureInfo;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + channel);
         }
@@ -485,9 +486,11 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
             case TRANSMISSION:
                 return transmissionTexture;
             case COAT_FACTOR:
+                return clearcoatTexture;
             case COAT_NORMAL:
+                return clearcoatNormalTexture;
             case COAT_ROUGHNESS:
-                return null;
+                return clearcoatRoughnessTexture;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + channel);
         }
@@ -654,10 +657,20 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      * 
      */
     protected void resolveExtensions(JSONGltf glTF) {
+        resolveIOR();
+        resolveTransmission();
+        resolveEmissiveStrength();
+        resolveClearcoat();
+
+        // Resolves any use of texture transform
         GltfExtensions extensions = glTF.getGltfExtensions();
         checkTextureExtension(getNormalTextureInfo(), extensions);
         checkTextureExtension(getEmissiveTextureInfo(), extensions);
         checkTextureExtension(getOcclusionTextureInfo(), extensions);
+        checkTextureExtension(transmissionTextureInfo, extensions);
+        checkTextureExtension(clearcoatTextureInfo, extensions);
+        checkTextureExtension(clearcoatNormalTextureInfo, extensions);
+        checkTextureExtension(clearcoatRoughnessTextureInfo, extensions);
         if (getPbrMetallicRoughness() != null) {
             checkTextureExtension(getPbrMetallicRoughness().getBaseColorTextureInfo(), extensions);
             checkTextureExtension(getPbrMetallicRoughness().getMetallicRoughnessTextureInfo(), extensions);

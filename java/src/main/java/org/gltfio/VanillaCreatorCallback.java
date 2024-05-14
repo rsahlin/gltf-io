@@ -40,15 +40,27 @@ public class VanillaCreatorCallback implements CreatorCallback {
             new float[] { 0.1f, 0.3f, 0.75f },
     };
     float[][] lightOffsetTable = new float[][] {
-            new float[] { -1f, -1f, 0f },
-            new float[] { 0f, -1f, 0f },
-            new float[] { 1f, -1f, 0f },
+            new float[] { -1f, -1.6f, 0f },
+            new float[] { 0f, -1.6f, 0f },
+            new float[] { 1f, -1.6f, 0f },
             new float[] { -1f, 0f, 0f },
             new float[] { 0f, 0f, 0f },
             new float[] { 1f, 0f, 0f },
-            new float[] { -1f, 1f, 0f },
-            new float[] { 0f, 1f, 0f },
-            new float[] { 1f, 1f, 0f }
+            new float[] { -1f, 1.6f, 0f },
+            new float[] { 0f, 1.6f, 0f },
+            new float[] { 1f, 1.6f, 0f }
+    };
+
+    RM[] ndfTable = new RM[] {
+            new RM(0.001f, 0.0f),
+            new RM(0.001f, 0.0f),
+            new RM(0.001f, 0.0f),
+            new RM(0.001f, 0.0f),
+            new RM(0.001f, 0.0f),
+            new RM(0.001f, 0.0f),
+            new RM(0.001f, 0.0f),
+            new RM(0.001f, 0.0f),
+            new RM(0.001f, 0.0f),
     };
 
     float[][] fresnelColorTable = new float[][] {
@@ -130,22 +142,22 @@ public class VanillaCreatorCallback implements CreatorCallback {
         // createManyInstances(creator);
         // createTransmissionQuads(creator, false);
         // createDielectricIOR(creator);
-        roughnessFresnelTest(creator);
+        // roughnessFresnelTest(creator);
+        fresnelNDFTest(creator);
     }
 
-    private void createQuads(VanillaGltfCreator creator) {
-        JSONPrimitive[] primitives = createQuadPrimitives(creator, 9, lightBaseColorTable, null, null, null);
+    private void fresnelNDFTest(VanillaGltfCreator creator) {
+        JSONPrimitive[] primitives = createQuadPrimitives(creator, 9, lightBaseColorTable, ndfTable, null, null);
         int[] nodeIndexes = new int[primitives.length];
         JSONNode[] nodes = new JSONNode[primitives.length];
         for (int i = 0; i < primitives.length; i++) {
             int meshIndex = creator.createMesh(primitives[i]);
-            nodeIndexes[i] =
-                    creator.createNode("Node" + Integer.toString(i), meshIndex, lightOffsetTable[i], null, null, null);
+            nodeIndexes[i] = creator.createNode("Node" + Integer.toString(i), meshIndex, lightOffsetTable[i], null, null, null);
             nodes[i] = creator.getNode(nodeIndexes[i]);
         }
         int sceneIndex = creator.createScene("Light usecase scene", nodeIndexes);
-        int lightIndex = creator.createLight(sceneIndex, "LightNode", new float[] { 0, 0, 10000 }, new float[] { 1, 1f, 0f, }, 600);
-        MinMax bounds = new MinMax(new float[] { -1.5f, -1.5f, 0 }, new float[] { 1.5f, 1.5f, 0 });
+        int lightIndex = creator.createLight(sceneIndex, "LightNode", new float[] { 0, 0, 10000 }, new float[] { 1, 1f, 1f, }, 0.9f);
+        MinMax bounds = creator.getBounds();
         int nodeIndex = creator.addCamera("Usecase Camera", bounds, Alignment.CENTER, sceneIndex);
         JSONNode cameraNode = creator.getNode(nodeIndex);
         float[] position = cameraNode.getTransform().getTranslate();

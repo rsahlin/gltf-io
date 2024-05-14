@@ -148,7 +148,6 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
         setRotation(rotation);
         setScale(scale);
         this.children = children != null && children.length > 0 ? children : null;
-        this.transform = new Transform();
     }
 
     /**
@@ -501,12 +500,17 @@ public class JSONNode<M extends JSONMesh<?>> extends NamedValue implements Runti
      * Sets the transform from matrix or trs values in this node. This can be used to reset transform to original state.
      */
     public void setTransform() {
+        if (transform == null) {
+            transform = new Transform();
+        }
         if (translation != null || rotation != null || scale != null) {
             transform.setTranslate(translation);
             transform.setRotation(rotation);
             transform.setScale(scale);
         } else {
-            transform.setMatrix(matrix);
+            if (matrix != null) {
+                transform.setMatrix(matrix);
+            }
         }
     }
 

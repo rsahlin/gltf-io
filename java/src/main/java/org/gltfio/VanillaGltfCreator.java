@@ -101,6 +101,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
     private int currentBufferOffset = Constants.NO_VALUE;
     private int currentBufferSize = Constants.NO_VALUE;
     private int defaultBufferSize = 500000;
+    private MinMax createdNodeBounds = new MinMax();
 
     private final String copyright;
     private final int initialBuffer;
@@ -298,6 +299,18 @@ public class VanillaGltfCreator implements GltfAssetCreator {
     public int createNode(String name, int mesh, float[] translation, float[] rotation, float[] scale, int... children) {
         JSONNode node = currentAsset.createNode(name, mesh, translation, rotation, scale, children);
         int nodeIndex = currentAsset.addNode(node);
+        int meshIndex = node.getMeshIndex();
+        if (meshIndex != Constants.NO_VALUE) {
+            JSONMesh<JSONPrimitive> meshRef = currentAsset.getMeshes()[node.getMeshIndex()];
+            for (JSONPrimitive p : meshRef.getPrimitives()) {
+                int posIndex = p.getAccessorIndex(Attributes.POSITION);
+                JSONAccessor pos = currentAsset.getAccessor(posIndex);
+                MinMax mm = new MinMax(pos.getMin(), pos.getMax());
+                node.setTransform();
+                mm.transform(node.getTransform().updateMatrix());
+                createdNodeBounds.expand(mm);
+            }
+        }
         return nodeIndex;
     }
 
@@ -314,6 +327,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
     public int createLight(int sceneIndex, String nodeName, float[] lightPosition, float[] lightColor, float lightIntensity) {
         int lightIndex = createNode(nodeName, -1, null, null, null);
         JSONNode<JSONMesh<?>> lightNode = getNode(lightIndex);
+        lightNode.setTransform();
         KHRLightsPunctual.setNodeRotation(lightNode, lightPosition);
         addLight(sceneIndex, lightIndex, Light.Type.directional, lightColor, lightIntensity);
         lightNode.setJSONRotation(lightNode.getTransform().getRotation());
@@ -331,6 +345,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
         scene.addNodes(nodes);
         int sceneIndex = currentAsset.addScene(scene);
         currentAsset.setSceneIndex(sceneIndex);
+
         return sceneIndex;
     }
 
@@ -628,10 +643,20 @@ public class VanillaGltfCreator implements GltfAssetCreator {
         int nodeIndex = createNode("Camera node", -1, new float[] { 0, 0, 0 }, null, null);
         JSONScene scene = currentAsset.getScene(sceneIndex);
         JSONNode node = currentAsset.getNode(nodeIndex);
+        node.setTransform();
         int cameraIndex = currentAsset.createCamera(name, bounds, align, Settings.getInstance().getFloat(Settings.PlatformFloatProperties.DISPLAY_ASPECT), scene, node);
         node.setJSONTRS(node.getTransform());
         scene.addNodeIndex(nodeIndex);
         return nodeIndex;
+    }
+
+    /**
+     * Returns the bounds that are created when create node is called - currently only calculates bounds using node transform - NOT parent.
+     * 
+     * @return
+     */
+    public MinMax getBounds() {
+        return createdNodeBounds;
     }
 
 }

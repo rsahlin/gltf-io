@@ -129,6 +129,9 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
     @Override
     public JSONNode[] getNodes() {
         if (nodeArray == null) {
+            if (nodeRefs.size() < nodeIndexes.size()) {
+                throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Scene nodereferences have not been resolved");
+            }
             nodeArray = nodeRefs.toArray(new JSONNode[0]);
         }
         return nodeArray;

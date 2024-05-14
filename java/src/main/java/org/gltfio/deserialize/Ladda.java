@@ -348,8 +348,7 @@ public class Ladda {
         }
     }
 
-    private void resolve(JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> glTF, ModelPreparation modelPrep,
-            GltfSettings settings) throws IOException {
+    private void resolve(JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> glTF, ModelPreparation modelPrep, GltfSettings settings) throws IOException {
         resolveSceneGraph(glTF);
         checkProperties(glTF);
         glTF.resolveExtensions();
@@ -369,9 +368,7 @@ public class Ladda {
         KHREnvironmentMapReference cubemapRef = null;
         if ((environmentMap != null) || (irradianceMap != null)) {
             if (glTF.getExtension(ExtensionTypes.KHR_environment_map) != null) {
-                Logger.e(getClass(), ErrorMessage.INVALID_STATE.message
-                        + ", model already has environmentmap - skipping from property " +
-                        LaddaProperties.ENVIRONMENTMAP.getKey());
+                Logger.e(getClass(), ErrorMessage.INVALID_STATE.message + ", model already has environmentmap - skipping from property " + LaddaProperties.ENVIRONMENTMAP.getKey());
             } else {
                 IrradianceMap im = null;
                 if (irradianceMap != null) {
@@ -380,8 +377,7 @@ public class Ladda {
                     String irMapName = set.getString("irmap:", irradianceMap);
                     IRMAP irMap = irMapName != null ? IRMAP.get(irMapName) : IRMAP.DEFAULT;
                     if (irMap == null) {
-                        throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Unknown irmap "
-                                + irMapName);
+                        throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Unknown irmap " + irMapName);
                     }
                     im.set(irMap.coefficients, definedIntensity != null ? definedIntensity : 1.0f);
                 }

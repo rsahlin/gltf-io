@@ -95,21 +95,24 @@ public class Gltf2TransientDelegator {
     }
 
     private void resolveTransient(JSONGltf glTF, JSONMaterial material) {
-        // Resolve extensions before resolving the material
-        material.resolveExtensions(glTF);
+        resolveTransient(glTF, material.getPbrMetallicRoughness());
         material.resolveTransientValues();
+        material.resolveExtensions(glTF);
 
         material.normalTexture = getTextureRef(glTF, material.getNormalTextureInfo(), Channel.NORMAL);
         material.occlusionTexture = getTextureRef(glTF, material.getOcclusionTextureInfo(), Channel.OCCLUSION);
         material.emissiveTexture = getTextureRef(glTF, material.getEmissiveTextureInfo(), Channel.EMISSIVE);
-        resolveTransient(glTF, material.getPbrMetallicRoughness());
+        material.clearcoatTexture = getTextureRef(glTF, material.clearcoatTextureInfo, Channel.COAT_FACTOR);
+        material.clearcoatNormalTexture = getTextureRef(glTF, material.clearcoatNormalTextureInfo, Channel.COAT_NORMAL);
+        material.clearcoatRoughnessTexture = getTextureRef(glTF, material.clearcoatRoughnessTextureInfo, Channel.COAT_ROUGHNESS);
+        material.setTextureChannelsValue();
+
     }
 
     private void resolveTransient(JSONGltf glTF, JSONPBRMetallicRoughness pbr) {
         if (pbr != null) {
             pbr.baseColorTexture = getTextureRef(glTF, pbr.getBaseColorTextureInfo(), Channel.BASECOLOR);
-            pbr.metallicRoughnessTexture = getTextureRef(glTF, pbr.getMetallicRoughnessTextureInfo(),
-                    Channel.METALLICROUGHNESS);
+            pbr.metallicRoughnessTexture = getTextureRef(glTF, pbr.getMetallicRoughnessTextureInfo(), Channel.METALLICROUGHNESS);
         }
     }
 
