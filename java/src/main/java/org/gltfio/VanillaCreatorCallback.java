@@ -29,38 +29,60 @@ public class VanillaCreatorCallback implements CreatorCallback {
     };
 
     float[][] lightBaseColorTable = new float[][] {
-            new float[] { 0.9f, 0.1f, 0f },
-            new float[] { 0.1f, 0.9f, 0f },
-            new float[] { 0f, 0.1f, 0.9f },
-            new float[] { 0.9f, 0f, 0f },
-            new float[] { 0f, 0.9f, 0f },
-            new float[] { 0f, 0f, 0.9f },
-            new float[] { 0.75f, 0.2f, 0.1f },
-            new float[] { 0.2f, 0.75f, 0.05f },
-            new float[] { 0.1f, 0.3f, 0.75f },
+            new float[] { 0f, 0f, 0f },
+            new float[] { 0f, 0f, 0f },
+            new float[] { 0f, 0f, 0f },
+            new float[] { 0f, 0f, 0f },
+            new float[] { 0f, 0f, 0f },
+            new float[] { 0f, 0f, 0f },
+            new float[] { 0f, 0f, 0f },
+            new float[] { 0f, 0f, 0f },
+            new float[] { 0f, 0f, 0f },
     };
     float[][] lightOffsetTable = new float[][] {
-            new float[] { -1f, -1.6f, 0f },
-            new float[] { 0f, -1.6f, 0f },
-            new float[] { 1f, -1.6f, 0f },
+            new float[] { -1f, 1.6f, 0f },
+            new float[] { 0f, 1.6f, 0f },
+            new float[] { 1f, 1.6f, 0f },
             new float[] { -1f, 0f, 0f },
             new float[] { 0f, 0f, 0f },
             new float[] { 1f, 0f, 0f },
-            new float[] { -1f, 1.6f, 0f },
-            new float[] { 0f, 1.6f, 0f },
-            new float[] { 1f, 1.6f, 0f }
+            new float[] { -1f, -1.6f, 0f },
+            new float[] { 0f, -1.6f, 0f },
+            new float[] { 1f, -1.6f, 0f }
     };
 
     RM[] ndfTable = new RM[] {
-            new RM(0.001f, 0.0f),
-            new RM(0.001f, 0.0f),
-            new RM(0.001f, 0.0f),
-            new RM(0.001f, 0.0f),
-            new RM(0.001f, 0.0f),
-            new RM(0.001f, 0.0f),
-            new RM(0.001f, 0.0f),
-            new RM(0.001f, 0.0f),
-            new RM(0.001f, 0.0f),
+            new RM(0.0f, 0.0f),
+            new RM(0.0f, 0.0f),
+            new RM(0.0f, 0.0f),
+            new RM(0.0f, 0.0f),
+            new RM(0.0f, 0.0f),
+            new RM(0.0f, 0.0f),
+            new RM(0.0f, 1.0f),
+            new RM(0.0f, 1.0f),
+            new RM(0.0f, 1.0f),
+    };
+    RM[] roughnessTable = new RM[] {
+            new RM(0.0f, 0.0f),
+            new RM(0.2f, 0.0f),
+            new RM(0.4f, 0.0f),
+            new RM(0.6f, 0.0f),
+            new RM(0.8f, 0.0f),
+            new RM(1.0f, 0.0f),
+            new RM(0.0f, 1.0f),
+            new RM(0.0f, 1.0f),
+            new RM(0.0f, 1.0f),
+    };
+    RM[] roughnessSmallTable = new RM[] {
+            new RM(0.0f, 0.0f),
+            new RM(0.05f, 0.0f),
+            new RM(0.1f, 0.0f),
+            new RM(0.15f, 0.0f),
+            new RM(0.2f, 0.0f),
+            new RM(0.25f, 0.0f),
+            new RM(0.0f, 1.0f),
+            new RM(0.0f, 1.0f),
+            new RM(0.0f, 1.0f),
     };
 
     float[][] fresnelColorTable = new float[][] {
@@ -143,11 +165,33 @@ public class VanillaCreatorCallback implements CreatorCallback {
         // createTransmissionQuads(creator, false);
         // createDielectricIOR(creator);
         // roughnessFresnelTest(creator);
-        fresnelNDFTest(creator);
+        float lightIntensity = 0.9f;
+        float maxWhite = 1.0f;
+        fresnelReflectionTest(creator, ndfTable, lightIntensity, maxWhite);
+        // fresnelReflectionTest(creator, roughnessSmallTable, lightIntensity, maxWhite);
+        // fresnelReflectionTest(creator, roughnessTable, lightIntensity, maxWhite);
     }
 
-    private void fresnelNDFTest(VanillaGltfCreator creator) {
-        JSONPrimitive[] primitives = createQuadPrimitives(creator, 9, lightBaseColorTable, ndfTable, null, null);
+    /**
+     * The purpose of this test is to measure the amount of reflected light.
+     * One directional lightsource is setup going directly into the screen (along the z axis)
+     * Reflected light from perflectly smooth (roughness = 0.0) black material shall be 4% of light intensity.
+     * 
+     * @param creator
+     * @param
+     */
+    private void fresnelReflectionTest(VanillaGltfCreator creator, RM[] rmTable, float lightIntensity, float maxWhite) {
+        float[][] emissive =
+                new float[][] {
+                        new float[] { 0.04f * lightIntensity, 0.04f * lightIntensity, 0.04f * lightIntensity },
+                        new float[] { lightIntensity, lightIntensity, lightIntensity },
+                        new float[] { maxWhite, maxWhite, maxWhite } };
+
+        JSONPrimitive[] primitives = createQuadPrimitives(creator, 9, lightBaseColorTable, rmTable, null, null);
+        int emissiveIndex = 0;
+        for (int i = 6; i < 9; i++) {
+            primitives[i].getMaterial().setEmissiveFactor(emissive[emissiveIndex++]);
+        }
         int[] nodeIndexes = new int[primitives.length];
         JSONNode[] nodes = new JSONNode[primitives.length];
         for (int i = 0; i < primitives.length; i++) {
@@ -156,13 +200,14 @@ public class VanillaCreatorCallback implements CreatorCallback {
             nodes[i] = creator.getNode(nodeIndexes[i]);
         }
         int sceneIndex = creator.createScene("Light usecase scene", nodeIndexes);
-        int lightIndex = creator.createLight(sceneIndex, "LightNode", new float[] { 0, 0, 10000 }, new float[] { 1, 1f, 1f, }, 0.9f);
+        int lightIndex = creator.createLight(sceneIndex, "LightNode", new float[] { 0, 0, 10000 }, new float[] { 1, 1f, 1f, }, lightIntensity);
         MinMax bounds = creator.getBounds();
         int nodeIndex = creator.addCamera("Usecase Camera", bounds, Alignment.CENTER, sceneIndex);
         JSONNode cameraNode = creator.getNode(nodeIndex);
         float[] position = cameraNode.getTransform().getTranslate();
         position[2] = position[2] * 2;
-        for (int i = 0; i < nodes.length; i++) {
+        // Turn top two row towards origin
+        for (int i = 0; i < 6; i++) {
             float[] quaternion = Transform.getXYRotation(nodes[i].getJSONTranslation(), position);
             nodes[i].setJSONRotation(quaternion);
         }
