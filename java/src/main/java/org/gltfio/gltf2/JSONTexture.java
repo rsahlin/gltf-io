@@ -34,7 +34,7 @@ public class JSONTexture extends NamedValue {
         NORMAL(2, "NL"),
         METALLICROUGHNESS(4, "MR"), // One texturechannel with MR
         OCCLUSION(8, "OC"), // One texturechannel with Occlusion
-        // ORM(16, "ORM"), //One texturechannel with ORM
+        ORM(16, "ORM"), // One texturechannel with ORM
         EMISSIVE(32, "EM"),
         TRANSMISSION(64, "TR"),
         COAT_ROUGHNESS(128, "CR"),
@@ -217,6 +217,19 @@ public class JSONTexture extends NamedValue {
             if (getExtension(ExtensionTypes.KHR_texture_transform) != null) {
                 transformIndex = extensions.addKHRTextureTransform(this);
             }
+        }
+
+        /**
+         * Returns true if texture info have the same values.
+         * 
+         * @param info
+         * @return
+         */
+        public boolean isSame(TextureInfo info) {
+            if (info != null) {
+                return (index == info.index && texCoord == info.texCoord && transformIndex == transformIndex);
+            }
+            return false;
         }
 
         /**

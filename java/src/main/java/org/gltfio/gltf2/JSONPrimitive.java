@@ -142,7 +142,9 @@ public class JSONPrimitive extends BaseObject implements RuntimeObject {
         BITANGENT(4, "BIT"),
         TEXCOORD_0(5, "TX0"),
         TEXCOORD_1(6, "TX1"),
-        COLOR_0(7, "CO0");
+        TEXCOORD_2(7, "TX2"),
+        TEXCOORD_3(8, "TX3"),
+        COLOR_0(9, "CO0");
 
         public final String id;
         public final byte value;
@@ -168,6 +170,10 @@ public class JSONPrimitive extends BaseObject implements RuntimeObject {
                 }
             }
             return null;
+        }
+
+        public static Attributes[] getTexCoords() {
+            return new Attributes[] { TEXCOORD_0, TEXCOORD_1, TEXCOORD_2 };
         }
 
     }
@@ -243,8 +249,7 @@ public class JSONPrimitive extends BaseObject implements RuntimeObject {
      * @param attributeMap
      */
     @SuppressWarnings("unchecked")
-    protected JSONPrimitive(JSONGltf glTF, DrawMode mode, int materialIndex, int indicesIndex,
-            HashMap<Attributes, Integer> attributeMap) {
+    protected JSONPrimitive(JSONGltf glTF, DrawMode mode, int materialIndex, int indicesIndex, HashMap<Attributes, Integer> attributeMap) {
         this.mode = mode;
         this.modeValue = mode.value;
         this.material = materialIndex;

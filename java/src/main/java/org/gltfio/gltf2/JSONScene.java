@@ -15,7 +15,6 @@ import org.gltfio.data.VertexBuffer;
 import org.gltfio.data.VertexBuffer.VertexBufferBundle;
 import org.gltfio.gltf2.JSONPrimitive.Attributes;
 import org.gltfio.gltf2.JSONTexture.Channel;
-import org.gltfio.gltf2.JSONTexture.TextureInfo;
 import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
 import org.gltfio.gltf2.extensions.KHREnvironmentMap.KHREnvironmentMapReference;
 import org.gltfio.gltf2.extensions.KHRLightsPunctual;
@@ -301,24 +300,6 @@ public abstract class JSONScene extends NamedValue implements RenderableScene {
             }
         }
         return result;
-    }
-
-    /**
-     * Returns an array of the materials that use the texture
-     * 
-     * @param textureInfo
-     * @return
-     */
-    public JSONMaterial[] getMaterialsForTexture(TextureInfo textureInfo) {
-        ArrayList<JSONMaterial> result = new ArrayList<JSONMaterial>();
-        JSONMaterial[] materials = getMaterials();
-
-        for (JSONMaterial m : materials) {
-            if (m.usesTexture(textureInfo)) {
-                result.add(m);
-            }
-        }
-        return result.toArray(new JSONMaterial[0]);
     }
 
     @Override

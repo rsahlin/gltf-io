@@ -95,16 +95,31 @@ public class Gltf2TransientDelegator {
     }
 
     private void resolveTransient(JSONGltf glTF, JSONMaterial material) {
-        resolveTransient(glTF, material.getPbrMetallicRoughness());
+        JSONPBRMetallicRoughness mr = material.getPbrMetallicRoughness();
+        resolveTransient(glTF, mr);
         material.resolveTransientValues();
         material.resolveExtensions(glTF);
-
         material.normalTexture = getTextureRef(glTF, material.getNormalTextureInfo(), Channel.NORMAL);
         material.occlusionTexture = getTextureRef(glTF, material.getOcclusionTextureInfo(), Channel.OCCLUSION);
         material.emissiveTexture = getTextureRef(glTF, material.getEmissiveTextureInfo(), Channel.EMISSIVE);
         material.clearcoatTexture = getTextureRef(glTF, material.clearcoatTextureInfo, Channel.COAT_FACTOR);
         material.clearcoatNormalTexture = getTextureRef(glTF, material.clearcoatNormalTextureInfo, Channel.COAT_NORMAL);
         material.clearcoatRoughnessTexture = getTextureRef(glTF, material.clearcoatRoughnessTextureInfo, Channel.COAT_ROUGHNESS);
+        if (material.occlusionTexture != null && mr != null && mr.metallicRoughnessTexture != null) {
+            // Check if texture is ORM
+            if (material.occlusionTextureInfo.isSame(mr.metallicRoughnessTextureInfo)) {
+                material.ormTexture = glTF.getTexture(material.occlusionTextureInfo.getIndex());
+                material.ormTextureInfo = material.occlusionTextureInfo;
+                material.occlusionTexture = null;
+                material.occlusionTextureInfo = null;
+                mr.metallicRoughnessTexture = null;
+                mr.metallicRoughnessTextureInfo = null;
+            }
+        }
+
+        /**
+         * Set channels value last
+         */
         material.setTextureChannelsValue();
 
     }

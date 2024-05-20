@@ -546,7 +546,7 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
      * @return
      */
     protected JSONMaterial getMaterial(int index) {
-        return (index >= 0 && index < materials.size() - 1) ? materials.get(index) : null;
+        return (index >= 0 && index < materials.size()) ? materials.get(index) : null;
     }
 
     /**

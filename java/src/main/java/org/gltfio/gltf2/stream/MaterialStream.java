@@ -82,8 +82,8 @@ public class MaterialStream extends NamedSubStream<JSONMaterial> {
         storeDataAsBytes(buffer, 255, data.getEmissiveFactor());
         buffer.put(data.getAlphaMode().value);
         storeDataAsBytes(buffer, 255, data.getAlphaCutoff());
-        int[] indexes = data.getTextureIndexes();
-        putIntsAndUpdate(buffer, indexes);
+        // int[] indexes = data.getTextureIndexes();
+        // putIntsAndUpdate(buffer, indexes);
     }
 
     /**

@@ -169,8 +169,7 @@ public class J2SEMeshBuffers extends MeshBuffers {
 
     final HashMap<JSONAccessor, float[]> positions = new HashMap<JSONAccessor, float[]>();
     final HashMap<JSONAccessor, float[]> normals = new HashMap<JSONAccessor, float[]>();
-    final HashMap<JSONAccessor, float[]> uvCoord0 = new HashMap<JSONAccessor, float[]>();
-    final HashMap<JSONAccessor, float[]> uvCoord1 = new HashMap<JSONAccessor, float[]>();
+    final HashMap<JSONAccessor, float[]>[] uvCoords = new HashMap[Attributes.getTexCoords().length];
 
     final HashMap<JSONPrimitive, PrimitiveBuffer> primitiveBuffers = new HashMap<JSONPrimitive, J2SEMeshBuffers.PrimitiveBuffer>();
 
@@ -181,6 +180,10 @@ public class J2SEMeshBuffers extends MeshBuffers {
 
     public J2SEMeshBuffers(JSONMesh[] meshes) {
         super();
+        Attributes[] texcoords = Attributes.getTexCoords();
+        for (int i = 0; i < texcoords.length; i++) {
+            uvCoords[i] = new HashMap<JSONAccessor, float[]>();
+        }
         getAccessors(meshes);
     }
 
@@ -245,13 +248,9 @@ public class J2SEMeshBuffers extends MeshBuffers {
                     if (recalc | primitive.getAccessor(Attributes.TANGENT) == null) {
                         JSONAccessor normal = primitive.getAccessor(Attributes.NORMAL);
                         if (primitive.getAccessor(Attributes.TANGENT) == null) {
-                            Logger.d(getClass(),
-                                    "Creating tangents for primitive with NORMAL but no TANGENT, bufferview index: "
-                                            + normal.getBufferViewIndex() + ", for " + normal.getCount() + " vertices");
+                            Logger.d(getClass(), "Creating tangents for primitive with NORMAL but no TANGENT, bufferview index: " + normal.getBufferViewIndex() + ", for " + normal.getCount() + " vertices");
                         } else {
-                            Logger.d(getClass(),
-                                    "Recalculating tangents for primitive - NORMAL bufferview index: "
-                                            + normal.getBufferViewIndex() + ", for " + normal.getCount() + " vertices");
+                            Logger.d(getClass(), "Recalculating tangents for primitive - NORMAL bufferview index: " + normal.getBufferViewIndex() + ", for " + normal.getCount() + " vertices");
                         }
                         OutputData output = outputTangents.get(normal);
                         if (output == null) {
@@ -351,9 +350,11 @@ public class J2SEMeshBuffers extends MeshBuffers {
         if (pb == null) {
             float[] positionData = fetchData(primitive, Attributes.POSITION, positions);
             float[] normalData = fetchData(primitive, Attributes.NORMAL, normals);
-            float[][] uvCoordinates = new float[2][];
-            uvCoordinates[0] = fetchData(primitive, Attributes.TEXCOORD_0, uvCoord0);
-            uvCoordinates[1] = fetchData(primitive, Attributes.TEXCOORD_1, uvCoord1);
+            Attributes[] texcoords = Attributes.getTexCoords();
+            float[][] uvCoordinates = new float[texcoords.length][];
+            uvCoordinates[0] = fetchData(primitive, texcoords[0], uvCoords[0]);
+            uvCoordinates[1] = fetchData(primitive, texcoords[0], uvCoords[0]);
+            uvCoordinates[2] = fetchData(primitive, texcoords[0], uvCoords[0]);
             pb = new PrimitiveBuffer(primitive, positionData, normalData, uvCoordinates, getIndices(primitive));
             primitiveBuffers.put(primitive, pb);
         }

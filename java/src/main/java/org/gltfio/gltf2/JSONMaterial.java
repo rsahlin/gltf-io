@@ -72,7 +72,8 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     public static final AlphaMode DEFAULT_ALPHA_MODE = AlphaMode.OPAQUE;
     public static final float DEFAULT_ALPHA_CUTOFF = 0.5f;
     public static final boolean DEFAULT_DOUBLE_SIDED = false;
-    public static final float[] DEFAULT_EMISSIVE_FACTOR = new float[] { 0, 0, 0 };
+    public static final float DEFAULT_EMISSIVE_FACTOR = 0f;
+    public static final float DEFAULT_ABSORPTION = 0.66f;
 
     private static final String PBR_METALLIC_ROUGHNESS = "pbrMetallicRoughness";
     private static final String NORMAL_TEXTURE = "normalTexture";
@@ -123,7 +124,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     @SerializedName(EMISSIVE_TEXTURE)
     protected JSONTexture.TextureInfo emissiveTextureInfo;
     @SerializedName(EMISSIVE_FACTOR)
-    protected float[] emissiveFactor = DEFAULT_EMISSIVE_FACTOR;
+    protected float[] emissiveFactor = new float[] { DEFAULT_EMISSIVE_FACTOR, DEFAULT_EMISSIVE_FACTOR, DEFAULT_EMISSIVE_FACTOR };
     @SerializedName(ALPHA_MODE)
     protected AlphaMode alphaMode = DEFAULT_ALPHA_MODE;
     @SerializedName(ALPHA_CUTOFF)
@@ -134,29 +135,34 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     /**
      * Set if material uses KHR_materials_emissive_strength otherwise null
      */
-    protected transient Float emissiveStrength;
-    protected transient float ior = 1.5f;
-    protected transient float absorption = 0;
-    protected transient TextureInfo transmissionTextureInfo;
-    protected transient JSONTexture transmissionTexture;
+    private transient Float emissiveStrength;
+    private transient float ior = 1.5f;
+    private transient float absorption = 0;
+    private transient TextureInfo transmissionTextureInfo;
+    private transient JSONTexture transmissionTexture;
 
     /**
      * Clearcoat extension
      */
-    protected transient Float clearcoatFactor;
-    protected transient Float clearcoatRoughnessFactor;
-    protected transient NormalTextureInfo clearcoatNormalTextureInfo;
-    protected transient JSONTexture clearcoatNormalTexture;
-    protected transient TextureInfo clearcoatTextureInfo;
-    protected transient JSONTexture clearcoatTexture;
-    protected transient TextureInfo clearcoatRoughnessTextureInfo;
-    protected transient JSONTexture clearcoatRoughnessTexture;
+    private transient Float clearcoatFactor;
+    private transient Float clearcoatRoughnessFactor;
+    transient NormalTextureInfo clearcoatNormalTextureInfo;
+    transient JSONTexture clearcoatNormalTexture;
+    transient TextureInfo clearcoatTextureInfo;
+    transient JSONTexture clearcoatTexture;
+    transient TextureInfo clearcoatRoughnessTextureInfo;
+    transient JSONTexture clearcoatRoughnessTexture;
 
     /**
      * Resolved textures
      */
     protected transient JSONTexture normalTexture;
     protected transient JSONTexture occlusionTexture;
+    /**
+     * Enabled when resolving if occlusion and metalroughness texture is the same.
+     */
+    protected transient JSONTexture ormTexture;
+    protected transient TextureInfo ormTextureInfo;
     protected transient JSONTexture emissiveTexture;
     protected transient int textureChannelsValue;
     private transient Channel[] textureChannels;
@@ -333,7 +339,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
             if (alphaMode == AlphaMode.BLEND) {
                 absorption = pbrMetallicRoughness.getBaseColorFactor()[3];
             } else {
-                absorption = (1.0f - pbrMetallicRoughness.metallicFactor) * 0.9f + pbrMetallicRoughness.metallicFactor * 1f;
+                absorption = DEFAULT_ABSORPTION;
             }
         }
     }
@@ -395,46 +401,6 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     }
 
     /**
-     * Returns an array with texture indexes, in the order of Channel.
-     * If a texture is not used, the index will be -1
-     * 
-     * @return
-     */
-    public int[] getTextureIndexes() {
-        int[] result = new int[Channel.values().length];
-        int index = 0;
-        for (Channel channel : Channel.values()) {
-            result[index++] = getTextureIndex(channel);
-        }
-        return result;
-    }
-
-    /**
-     * Returns the TextureInfo index for the specified channel or -1 if not texture present for the channel.
-     * 
-     * @param channel
-     * @return
-     */
-    public int getTextureIndex(@NonNull Channel channel) {
-        switch (channel) {
-            case BASECOLOR:
-                return pbrMetallicRoughness.baseColorTextureInfo != null ? pbrMetallicRoughness.baseColorTextureInfo
-                        .getIndex() : Constants.NO_VALUE;
-            case EMISSIVE:
-                return emissiveTextureInfo != null ? emissiveTextureInfo.getIndex() : Constants.NO_VALUE;
-            case METALLICROUGHNESS:
-                return pbrMetallicRoughness.metallicRoughnessTextureInfo != null
-                        ? pbrMetallicRoughness.metallicRoughnessTextureInfo.getIndex() : Constants.NO_VALUE;
-            case NORMAL:
-                return normalTextureInfo != null ? normalTextureInfo.getIndex() : Constants.NO_VALUE;
-            case OCCLUSION:
-                return occlusionTextureInfo != null ? occlusionTextureInfo.getIndex() : Constants.NO_VALUE;
-            default:
-                throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + channel);
-        }
-    }
-
-    /**
      * Returns the TextureInfo for the specified channel or null if not texture present for the channel.
      * 
      * @param channel
@@ -460,6 +426,8 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
                 return clearcoatTextureInfo;
             case COAT_ROUGHNESS:
                 return clearcoatRoughnessTextureInfo;
+            case ORM:
+                return ormTextureInfo;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + channel);
         }
@@ -491,6 +459,8 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
                 return clearcoatNormalTexture;
             case COAT_ROUGHNESS:
                 return clearcoatRoughnessTexture;
+            case ORM:
+                return ormTexture;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + channel);
         }
@@ -536,17 +506,6 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
             textureChannels = BitFlags.getBitFlags(textureChannelsValue, Channel.values()).toArray(new Channel[0]);
         }
         return textureChannels;
-    }
-
-    /**
-     * Returns the number of textures (samplers) referenced by this material
-     * 
-     * @return
-     */
-    public int getTextureCount() {
-        return (emissiveTextureInfo != null ? 1 : 0) + (normalTextureInfo != null ? 1 : 0)
-                + (occlusionTextureInfo != null ? 1 : 0) +
-                (pbrMetallicRoughness != null ? pbrMetallicRoughness.getTextureCount() : 0);
     }
 
     /**
@@ -612,37 +571,6 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     }
 
     /**
-     * Returns true if the texture is used by this material
-     * 
-     * @param texture
-     * @return
-     */
-    public boolean usesTexture(TextureInfo texture) {
-        int texIndex = texture.getIndex();
-        return usesTexture(normalTextureInfo, texIndex) | usesTexture(occlusionTextureInfo, texIndex)
-                | usesTexture(emissiveTextureInfo, texIndex)
-                | usesTexture(pbrMetallicRoughness.metallicRoughnessTextureInfo, texIndex)
-                | usesTexture(pbrMetallicRoughness.baseColorTextureInfo, texIndex);
-    }
-
-    private boolean usesTexture(TextureInfo texture, int texIndex) {
-        return texture != null ? texture.getIndex() == texIndex : false;
-    }
-
-    /**
-     * Returns true if the texture coordinate index is used
-     * 
-     * @param texCoord
-     * @return
-     */
-    public boolean usesTexCoord(int texCoord) {
-        return usesTexCoord(texCoord, normalTextureInfo) | usesTexCoord(texCoord, occlusionTextureInfo)
-                | usesTexCoord(texCoord, emissiveTextureInfo)
-                | usesTexCoord(texCoord, pbrMetallicRoughness.metallicRoughnessTextureInfo)
-                | usesTexCoord(texCoord, pbrMetallicRoughness.baseColorTextureInfo);
-    }
-
-    /**
      * Returns true if this material uses the texture coordinate
      * 
      * @param texCoord Index of texture coordinate (0 or 1)
@@ -692,6 +620,17 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         emissiveFactor[0] = (rgb[0] & 0x0ff) / 255f;
         emissiveFactor[1] = (rgb[1] & 0x0ff) / 255f;
         emissiveFactor[2] = (rgb[2] & 0x0ff) / 255f;
+    }
+
+    /**
+     * Sets the emissivefactor
+     * 
+     * @param rgb
+     */
+    public void setEmissiveFactor(float[] rgb) {
+        this.emissiveFactor[0] = rgb[0];
+        this.emissiveFactor[1] = rgb[1];
+        this.emissiveFactor[2] = rgb[2];
     }
 
     /**

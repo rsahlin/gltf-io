@@ -118,8 +118,7 @@ public class VanillaGltf extends JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>
     }
 
     @Override
-    public JSONPrimitive createPrimitive(DrawMode mode, int materialIndex, int indicesIndex,
-            HashMap<Attributes, Integer> attributeMap) {
+    public JSONPrimitive createPrimitive(DrawMode mode, int materialIndex, int indicesIndex, HashMap<Attributes, Integer> attributeMap) {
         return new JSONPrimitive(this, mode, materialIndex, indicesIndex, attributeMap);
     }
 

@@ -14,8 +14,7 @@ public class AttributeSorter {
     /**
      * The default sort order
      */
-    public static final Attributes[] GLTF_SORT_ORDER = new Attributes[] { Attributes.POSITION, Attributes.NORMAL,
-            Attributes.TANGENT, Attributes.TEXCOORD_0, Attributes.TEXCOORD_1, Attributes.COLOR_0 };
+    public static final Attributes[] GLTF_SORT_ORDER = new Attributes[] { Attributes.POSITION, Attributes.NORMAL, Attributes.TANGENT, Attributes.TEXCOORD_0, Attributes.TEXCOORD_1, Attributes.TEXCOORD_2, Attributes.COLOR_0 };
 
     private final Attributes[] sortOrder;
 
