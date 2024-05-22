@@ -10,6 +10,8 @@ import com.google.gson.annotations.SerializedName;
 
 public class KHRMaterialsClearcoat extends JSONExtension {
 
+    public static final float DEFAULT_COAT_IOR = 1.5f;
+
     private static final String FACTOR = "clearcoatFactor";
     private static final String TEXTURE = "clearcoatTexture";
     private static final String ROUGHNESS_FACTOR = "clearcoatRoughnessFactor";

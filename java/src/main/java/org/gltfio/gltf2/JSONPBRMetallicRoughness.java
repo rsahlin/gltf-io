@@ -192,7 +192,16 @@ public class JSONPBRMetallicRoughness extends BaseObject {
      */
     public void setMetallicRoughness(byte metallic, byte roughness) {
         metallicFactor = (metallic & 0x0ff) / 255f;
-        metallicFactor = (metallic & 0x0ff) / 255f;
+        roughnessFactor = (roughness & 0x0ff) / 255f;
+    }
+
+    /**
+     * Sets the metallicfactor
+     * 
+     * @param metallicFactor
+     */
+    public void setMetallicFactor(float metallicFactor) {
+        this.metallicFactor = metallicFactor;
     }
 
 }

@@ -166,20 +166,19 @@ public class JSONAccessor extends BaseObject implements RuntimeObject {
      * @param buffView
      * @param buffViewIndex
      * @param offset Offset in bytes
-     * @param compType
-     * @param c
-     * @param t
-     * @param n
+     * @param componentType
+     * @param count
+     * @param type
+     * @param name
      */
-    protected JSONAccessor(JSONBufferView buffView, int buffViewIndex, int offset, ComponentType compType,
-            int c, Type t, String n) {
+    protected JSONAccessor(JSONBufferView buffView, int buffViewIndex, int offset, ComponentType componentType, int count, Type type, String name) {
         bufferViewRef = buffView;
         byteOffset = offset;
-        componentType = compType;
-        count = c;
-        type = t;
-        bufferViewIndex = buffViewIndex;
-        name = n;
+        this.componentType = componentType;
+        this.count = count;
+        this.type = type;
+        this.bufferViewIndex = buffViewIndex;
+        this.name = name;
         componentTypeValue = componentType.value;
         if (buffViewIndex == -1) {
             throw new IllegalArgumentException("Invalid index for BufferView");
@@ -213,15 +212,6 @@ public class JSONAccessor extends BaseObject implements RuntimeObject {
                             ErrorMessage.INVALID_VALUE.message + getComponentType());
             }
         }
-    }
-
-    /**
-     * Internal method to set the byte offset, use when BufferView is changed.
-     * 
-     * @param offset Offset in bytes
-     */
-    protected void setByteOffset(int offset) {
-        byteOffset = offset;
     }
 
     /**
@@ -340,7 +330,8 @@ public class JSONAccessor extends BaseObject implements RuntimeObject {
                 break;
             case ARRAY_BUFFER:
                 if (bufferViewRef.getByteStride() > 0) {
-                    buffer.limit(byteOffset + bufferViewRef.getByteOffset() + count * bufferViewRef.getByteStride());
+                    int limit = Math.min(byteOffset + bufferViewRef.getByteOffset() + count * bufferViewRef.getByteStride(), bufferViewRef.getByteOffset() + bufferViewRef.getByteLength());
+                    buffer.limit(limit);
                 } else {
                     buffer.limit(byteOffset + bufferViewRef.getByteOffset() + count * componentType.size * type.size);
                 }

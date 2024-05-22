@@ -105,6 +105,7 @@ public class FileUtils {
                 Logger.d(getClass(), "URL using getResource(): " + url.toString());
                 return getPath(url, path);
             }
+            Logger.d(getClass(), "Finding module: " + module);
             url = ModuleLayer.boot().findModule(module).getClass().getResource(path);
             if (url != null) {
                 Logger.d(getClass(), "URL findModule().getResource() " + url.toString());
@@ -286,8 +287,7 @@ public class FileUtils {
         int len = resourcePath.length();
         Path listPath = Path.of(resourcePath);
         try (Stream<Path> walk = Files.walk(listPath, 1)) {
-            List<Path> result = walk.filter(Files::isDirectory)
-                    .collect(Collectors.toList());
+            List<Path> result = walk.filter(Files::isDirectory).collect(Collectors.toList());
             for (Path folderPath : result) {
                 String str = fixPath(folderPath.toString());
                 int strLen = str.length();
@@ -306,11 +306,12 @@ public class FileUtils {
      * @param path Base path to start file list - shall end with '/'
      * @param folders Folders to include in search
      * @param mimes File extensions to include
+     * @param depth
      * @return Matching files
      * @throws IOException
      * @throws URISyntaxException
      */
-    public ArrayList<String> listFiles(String path, ArrayList<String> folders, final String[] mimes)
+    public ArrayList<String> listFiles(String path, ArrayList<String> folders, final String[] mimes, int depth)
             throws URISyntaxException, IOException {
         ArrayList<String> result = new ArrayList<String>();
         Logger.i(getClass(), "List files: path = " + path);
@@ -321,13 +322,11 @@ public class FileUtils {
             } else {
                 Path listPath = Path.of(ls + path + folder);
                 if (listPath == null) {
-                    throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message
-                            + "Could not get filesystempath for path: " + path + ", folder: " + folder);
+                    throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Could not get filesystempath for path: " + path + ", folder: " + folder);
                 }
                 Logger.i(getClass(), "Listing files in " + listPath.toString());
-                try (Stream<Path> walk = Files.walk(listPath, 1)) {
-                    List<Path> filePathList = walk.filter(Files::isRegularFile)
-                            .collect(Collectors.toList());
+                try (Stream<Path> walk = Files.walk(listPath, depth)) {
+                    List<Path> filePathList = walk.filter(Files::isRegularFile).collect(Collectors.toList());
                     String listStr = replaceDirectorySeparator(listPath.toString());
                     int len = listStr.length();
                     if (path.endsWith(DIRECTORY_SEPARATOR_STRING)) {

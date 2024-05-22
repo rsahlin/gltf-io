@@ -74,6 +74,8 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     public static final boolean DEFAULT_DOUBLE_SIDED = false;
     public static final float DEFAULT_EMISSIVE_FACTOR = 0f;
     public static final float DEFAULT_ABSORPTION = 0.66f;
+    public static final float DEFAULT_METAL_IOR = 0.4f;
+    public static final float DEFAULT_IOR = 1.5f;
 
     private static final String PBR_METALLIC_ROUGHNESS = "pbrMetallicRoughness";
     private static final String NORMAL_TEXTURE = "normalTexture";
@@ -136,7 +138,10 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      * Set if material uses KHR_materials_emissive_strength otherwise null
      */
     private transient Float emissiveStrength;
-    private transient float ior = 1.5f;
+    /**
+     * Resolved by calling resolveIOR();
+     */
+    private transient float ior;
     private transient float absorption = 0;
     private transient TextureInfo transmissionTextureInfo;
     private transient JSONTexture transmissionTexture;
@@ -146,6 +151,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      */
     private transient Float clearcoatFactor;
     private transient Float clearcoatRoughnessFactor;
+    private transient float clearCoatIOR = KHRMaterialsClearcoat.DEFAULT_COAT_IOR;
     transient NormalTextureInfo clearcoatNormalTextureInfo;
     transient JSONTexture clearcoatNormalTexture;
     transient TextureInfo clearcoatTextureInfo;
@@ -325,6 +331,8 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         KHRMaterialsIOR ext = (KHRMaterialsIOR) getExtension(ExtensionTypes.KHR_materials_ior);
         if (ext != null) {
             this.ior = ext.getIOR();
+        } else {
+            this.ior = (DEFAULT_METAL_IOR * pbrMetallicRoughness.metallicFactor) + (DEFAULT_IOR * (1.0f - pbrMetallicRoughness.metallicFactor));
         }
     }
 
@@ -352,6 +360,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
             this.clearcoatNormalTextureInfo = clearcoat.getClearCoatNormalTexture();
             this.clearcoatRoughnessTextureInfo = clearcoat.getClearCoatRoughnessTexture();
             this.clearcoatTextureInfo = clearcoat.getClearCoatTexture();
+
         }
     }
 
@@ -566,7 +575,14 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         values[0] = absorption;
         values[1] = clearcoatFactor != null ? clearcoatFactor : 0;
         values[2] = clearcoatRoughnessFactor != null ? clearcoatRoughnessFactor : 0;
-        values[3] = (float) Math.pow((1.0f - 1.6f) / (1.0f + 1.6f), 2);
+        values[3] = 0.0f;
+        if (clearcoatFactor != null) {
+            // TODO - this does not work if rm texturemap is used, in that case rougness and metal will be 1.0 and modulated by texture.
+            float diff = Math.abs(ior - clearCoatIOR);
+            if (diff != 0) {
+                values[3] = (float) Math.pow(diff / (ior + clearCoatIOR), 2);
+            }
+        }
         return values;
     }
 

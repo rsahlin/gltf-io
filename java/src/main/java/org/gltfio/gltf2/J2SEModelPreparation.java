@@ -92,8 +92,7 @@ public class J2SEModelPreparation
                 switch (bv.getTarget()) {
                     case ARRAY_BUFFER:
                         if (accessor.getComponentType() != ComponentType.FLOAT) {
-                            throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message
-                                    + ", componentType is " + accessor.getComponentType());
+                            throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + ", componentType is " + accessor.getComponentType());
                         }
                         int componentSize = accessor.getComponentType().size * accessor.getType().size;
                         if (bv.getByteStride() == 0) {
@@ -105,8 +104,7 @@ public class J2SEModelPreparation
                         break;
                     case ELEMENT_ARRAY_BUFFER:
                         if (accessor.getComponentType() == ComponentType.FLOAT) {
-                            throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message
-                                    + ", componentType is " + accessor.getComponentType());
+                            throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + ", componentType is " + accessor.getComponentType());
                         }
                         break;
                     default:
