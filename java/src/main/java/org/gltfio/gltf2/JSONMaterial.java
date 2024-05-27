@@ -4,6 +4,7 @@ package org.gltfio.gltf2;
 import java.nio.ByteBuffer;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.gltfio.deserialize.LaddaFloatProperties;
 import org.gltfio.gltf2.JSONTexture.Channel;
 import org.gltfio.gltf2.JSONTexture.NormalTextureInfo;
 import org.gltfio.gltf2.JSONTexture.TextureInfo;
@@ -74,7 +75,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     public static final boolean DEFAULT_DOUBLE_SIDED = false;
     public static final float DEFAULT_EMISSIVE_FACTOR = 0f;
     public static final float DEFAULT_ABSORPTION = 0.66f;
-    public static final float DEFAULT_METAL_IOR = 0.4f;
+    public static final float DEFAULT_METAL_IOR = 0.5f;
     public static final float DEFAULT_IOR = 1.5f;
 
     private static final String PBR_METALLIC_ROUGHNESS = "pbrMetallicRoughness";
@@ -347,7 +348,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
             if (alphaMode == AlphaMode.BLEND) {
                 absorption = pbrMetallicRoughness.getBaseColorFactor()[3];
             } else {
-                absorption = DEFAULT_ABSORPTION;
+                absorption = Settings.getInstance().getFloat(LaddaFloatProperties.MATERIAL_ABSORPTION);
             }
         }
     }
@@ -567,22 +568,28 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      * coatfactor
      * coatroughness
      * coat R0
+     * metal ior
+     * clearcoat ior
+     * reflective factor
      * 
      * @return
      */
     public float[] getProperties() {
-        float[] values = new float[4];
+        float[] values = new float[8];
         values[0] = absorption;
         values[1] = clearcoatFactor != null ? clearcoatFactor : 0;
         values[2] = clearcoatRoughnessFactor != null ? clearcoatRoughnessFactor : 0;
         values[3] = 0.0f;
         if (clearcoatFactor != null) {
-            // TODO - this does not work if rm texturemap is used, in that case rougness and metal will be 1.0 and modulated by texture.
+            // TODO - this does not work if rm texturemap is used, in that case roughness and metal will be 1.0 and modulated by texture.
             float diff = Math.abs(ior - clearCoatIOR);
             if (diff != 0) {
                 values[3] = (float) Math.pow(diff / (ior + clearCoatIOR), 2);
             }
         }
+        values[4] = DEFAULT_METAL_IOR;
+        values[5] = clearCoatIOR;
+        values[6] = 1.0f; // From specular extension
         return values;
     }
 

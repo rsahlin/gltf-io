@@ -208,7 +208,7 @@ public class KHREnvironmentMap extends JSONExtension {
          * @param pixels Width and height in pixels
          * @return
          */
-        public float getTexelPerPixelRatio(float[] pixels) {
+        public float getTexelPerPixelRatio(int[] pixels) {
             return cubemapRef != null ? Math.max(pixels[0] / cubemapRef.size, pixels[1] / cubemapRef.size) : 1;
         }
 

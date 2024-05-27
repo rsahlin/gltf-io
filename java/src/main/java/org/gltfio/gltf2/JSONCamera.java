@@ -540,15 +540,6 @@ public class JSONCamera extends NamedValue {
     }
 
     /**
-     * Returns the screensize, in pixels
-     * 
-     * @return
-     */
-    public float[] getScreenSize() {
-        return screenSize;
-    }
-
-    /**
      * creates the projection matrix and sets the aspect ratio
      * 
      * @param width Render area width, in pixels
@@ -565,8 +556,6 @@ public class JSONCamera extends NamedValue {
         if (getPerspective() != null) {
             getPerspective().setAspectRatio((float) width / height);
         }
-        screenSize[0] = width;
-        screenSize[1] = height;
         createProjectionMatrix();
         createViewVectors(width, height, axis);
     }

@@ -170,7 +170,7 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
     public int createCamera(String name, MinMax bounds, Alignment align, float aspect, RenderableScene scene, JSONNode node) {
         // Human vision is around 120 degrees horizontally and 180 degrees vertically.
         // Depending on what part of the vision is considered.
-        float yFOV = 1.0f;
+        float yFOV = Settings.getInstance().getFloat(LaddaFloatProperties.CAMERA_YFOV);
         float[] result = new float[3];
         bounds.getMaxDelta(result);
         Logger.d(getClass(), "Model scene is: " + result[0] + ", " + result[1] + ", " + result[2] + " meters");
