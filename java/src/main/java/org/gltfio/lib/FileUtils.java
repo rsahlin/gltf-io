@@ -160,9 +160,10 @@ public class FileUtils {
             } else {
                 Path p = FileUtils.getInstance().getFileSystemPath(path, module);
                 if (p == null) {
+                    Logger.d(getClass(), "getFileSystemPath for: " + path + " in module: " + module + " is NULL");
                     return null;
                 }
-                if (p.toString().startsWith("jar:")) {
+                if (p.toString().startsWith("jar:file:")) {
                     String jarpath = p.toString();
                     resourceDirectory = jarpath.substring(0, jarpath.length() - path.length() + 1);
                     Logger.d(getClass(), "Is jar, returning path: " + resourceDirectory);
@@ -427,6 +428,11 @@ public class FileUtils {
         File file = new File(path + filename);
         if (file.isAbsolute()) {
             return Paths.get(file.getAbsolutePath()).toFile();
+        } else if (path.startsWith("jar:file:")) {
+            Logger.d(getClass(), "getFile() from jar: " + path + ", file: " + filename);
+            Path p = Paths.get(getClass().getResource("/" + filename).toURI());
+            Logger.d(getClass(), "Path = " + p.toString());
+            return new File(Paths.get(getClass().getResource(addStartingDirectorySeparator(filename)).toURI()).toString());
         } else {
             String filePath = path + filename;
             String resourcePath = getResourcePath(path);
@@ -559,9 +565,14 @@ public class FileUtils {
      * @throws URISyntaxException
      * @throws IOException
      */
-    public long getFileSize(String name) throws URISyntaxException, IOException {
-        File file = getFile("", name);
-        return file != null ? file.length() : -1;
+    public long getFileSize(String path, String name) throws URISyntaxException, IOException {
+        try {
+            File file = getFile(path, name);
+            return file != null ? file.length() : -1;
+        } catch (FileNotFoundException e) {
+            Logger.e(getClass(), e.toString());
+            return -1;
+        }
     }
 
     /**
@@ -605,15 +616,14 @@ public class FileUtils {
         if (pathStr == null) {
             throw new IllegalArgumentException("No resource path to '" + path + "'");
         }
-        Path filePath = Path.of(pathStr + path + fileName);
-        Logger.d(getClass(), "URL: " + filePath.toUri().toURL());
-        if (FileUtils.getInstance().isJAR(filePath.toUri().toURL())) {
+        if (pathStr.startsWith("jar:file:")) {
             Logger.d(getClass(), "Is JAR");
             return null;
-        } else {
-            FileChannel fileChannel = (FileChannel) Files.newByteChannel(filePath, EnumSet.of(StandardOpenOption.READ));
-            return fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileChannel.size());
         }
+        Path filePath = Path.of(pathStr + path + fileName);
+        Logger.d(getClass(), "URL: " + filePath.toUri().toURL());
+        FileChannel fileChannel = (FileChannel) Files.newByteChannel(filePath, EnumSet.of(StandardOpenOption.READ));
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileChannel.size());
     }
 
 }

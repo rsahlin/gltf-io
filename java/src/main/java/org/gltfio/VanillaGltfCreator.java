@@ -96,7 +96,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
         void createAsset(VanillaGltfCreator creator);
     }
 
-    private JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> currentAsset;
+    private JSONGltf<JSONPrimitive, ?, JSONScene> currentAsset;
     private int currentBuffer = Constants.NO_VALUE;
     private int currentBufferOffset = Constants.NO_VALUE;
     private int currentBufferSize = Constants.NO_VALUE;
@@ -560,7 +560,7 @@ public class VanillaGltfCreator implements GltfAssetCreator {
     }
 
     @Override
-    public JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> createAsset() {
+    public JSONGltf createAsset() {
         create(copyright, initialBuffer);
         callback.createAsset(this);
         // Set the Buffer byteLength according to amount of data added

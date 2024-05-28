@@ -91,9 +91,6 @@ public class J2SEModelPreparation
             } else {
                 switch (bv.getTarget()) {
                     case ARRAY_BUFFER:
-                        if (accessor.getComponentType() != ComponentType.FLOAT) {
-                            throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + ", componentType is " + accessor.getComponentType());
-                        }
                         int componentSize = accessor.getComponentType().size * accessor.getType().size;
                         if (bv.getByteStride() == 0) {
                             bv.setByteStride(componentSize);
@@ -121,8 +118,7 @@ public class J2SEModelPreparation
         ArrayList<JSONAccessor> accessors = glTF.getAccessors();
         HashMap<Integer, Integer> bufferSizes = new HashMap<Integer, Integer>();
         for (JSONAccessor a : accessors) {
-            if (a.getComponentType() == ComponentType.UNSIGNED_BYTE && a.getBufferView() != null
-                    && a.getBufferView().getTarget() == Target.ELEMENT_ARRAY_BUFFER) {
+            if (a.getComponentType() == ComponentType.UNSIGNED_BYTE && a.getBufferView() != null && a.getBufferView().getTarget() == Target.ELEMENT_ARRAY_BUFFER) {
                 expandBuffers.add(a);
                 Integer size = bufferSizes.get(a.getBufferView().getBufferIndex());
                 if (size == null) {
@@ -140,10 +136,13 @@ public class J2SEModelPreparation
         // Create new buffers
         HashMap<Integer, Integer> convertIndexes = new HashMap<Integer, Integer>();
         if (bufferSizes.size() > 0) {
+            int sizeInBytes = 0;
             for (Integer bufferIndex : bufferSizes.keySet()) {
-                JSONBuffer source = glTF.getBuffer(bufferIndex);
-                int size = bufferSizes.get(bufferIndex) * 2;
-                convertIndexes.put(bufferIndex, glTF.createBuffer("IndexedByte", size));
+                sizeInBytes += bufferSizes.get(bufferIndex) * 2;
+            }
+            int newBufferIndex = glTF.createBuffer("IndexedByte", sizeInBytes);
+            for (Integer bufferIndex : bufferSizes.keySet()) {
+                convertIndexes.put(bufferIndex, newBufferIndex);
             }
         }
         byte[] data = new byte[256];

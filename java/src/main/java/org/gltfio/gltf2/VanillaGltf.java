@@ -7,10 +7,11 @@ import java.util.HashMap;
 
 import org.gltfio.gltf2.JSONPrimitive.Attributes;
 import org.gltfio.gltf2.JSONPrimitive.DrawMode;
+import org.gltfio.gltf2.VanillaGltf.VanillaMesh;
 
 import com.google.gson.InstanceCreator;
 
-public class VanillaGltf extends JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>, JSONScene> {
+public class VanillaGltf extends JSONGltf<JSONPrimitive, VanillaMesh, JSONScene> {
 
     public static class VanillaScene extends JSONScene implements InstanceCreator<VanillaScene> {
 
@@ -53,9 +54,6 @@ public class VanillaGltf extends JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>
 
     public static class VanillaMesh extends JSONMesh<JSONPrimitive> {
 
-        public VanillaMesh() {
-        }
-
         private VanillaMesh(String name, JSONPrimitive... primitives) {
             super(name);
             for (JSONPrimitive primitive : primitives) {
@@ -87,8 +85,8 @@ public class VanillaGltf extends JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>
         this.materials = new ArrayList<JSONMaterial>();
         this.bufferViews = new ArrayList<JSONBufferView>();
         this.accessors = new ArrayList<JSONAccessor>();
-        this.meshes = new ArrayList<JSONMesh<JSONPrimitive>>();
-        this.nodes = new ArrayList<JSONNode<JSONMesh<JSONPrimitive>>>();
+        this.meshes = new ArrayList<VanillaMesh>();
+        this.nodes = new ArrayList<JSONNode<VanillaMesh>>();
         this.scenes = new ArrayList<JSONScene>();
     }
 
@@ -98,7 +96,7 @@ public class VanillaGltf extends JSONGltf<JSONPrimitive, JSONMesh<JSONPrimitive>
     }
 
     @Override
-    public JSONMesh<JSONPrimitive>[] getMeshes() {
+    public VanillaMesh[] getMeshes() {
         if (meshArray == null) {
             meshArray = meshes.toArray(new VanillaMesh[0]);
         }

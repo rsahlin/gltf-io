@@ -4,7 +4,7 @@ package org.gltfio.gltf2;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import org.gltfio.deserialize.LaddaFloatProperties;
+import org.gltfio.deserialize.Ladda.LaddaFloatProperties;
 import org.gltfio.gltf2.JSONCamera.Perspective;
 import org.gltfio.gltf2.extensions.GltfExtensions;
 import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
@@ -96,6 +96,15 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
     protected transient int selectedCamera = 0;
 
     /**
+     * Sets the camera that will be returned when calling {@link #getCameraInstance()}
+     * 
+     * @param cameraIndex
+     */
+    public void setSelectedCamera(int cameraIndex) {
+        this.selectedCamera = cameraIndex;
+    }
+
+    /**
      * Returns the chosen camera instance, ie the currently chosen camera instance in this scene.
      * When a scene is loaded the added camera is default.
      * 
@@ -182,7 +191,7 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
         float distance = Math.max(b, bx) + result[2] / 2;
         Float nearValue = Settings.getInstance().getFloat(LaddaFloatProperties.CAMERA_NEAR);
         float near = nearValue != null ? nearValue : Math.min(0.1f, distance / 20);
-        Perspective p = new Perspective(Constants.NO_VALUE, yFOV, distance * 4, near);
+        Perspective p = new Perspective(Constants.NO_VALUE, yFOV, distance * 8, near);
         JSONCamera camera = new JSONCamera(p, node);
         int cameraIndex = addCamera(camera);
         node.setCameraIndex(cameraIndex);

@@ -12,8 +12,7 @@ import org.gltfio.lib.Logger;
 
 abstract class BaseTest {
 
-    protected AssetBaseObject<RenderableScene> getGLTFAsset(String fileName)
-            throws IOException, ClassNotFoundException, URISyntaxException {
+    protected AssetBaseObject<RenderableScene> getGLTFAsset(String fileName) throws IOException, ClassNotFoundException, URISyntaxException {
         Logger.d(getClass(), "Loading glTF asset:" + fileName);
         File f = new File(fileName);
         return Ladda.getInstance(VanillaGltf.class).loadGltf(f.getParent(), f.getName(), null, null);

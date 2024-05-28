@@ -34,8 +34,7 @@ public class GlbReader {
      */
     public void read(String path, String fileName) throws IOException, ClassNotFoundException, URISyntaxException {
         if (mappedByteBuffer != null) {
-            throw new IllegalArgumentException(
-                    ErrorMessage.INVALID_STATE.message + "Already read from " + path.toString());
+            throw new IllegalArgumentException(ErrorMessage.INVALID_STATE.message + "Already read from " + path.toString());
         }
         ByteBuffer bb = FileUtils.getInstance().mapFile(path, fileName);
         if (bb == null) {
@@ -68,7 +67,7 @@ public class GlbReader {
     private void read(InputStream is) throws IOException {
         long start = System.currentTimeMillis();
         byte[] data = StreamUtils.readFromStream(is);
-        long delta = System.currentTimeMillis() - start;
+        float delta = Math.max(1f, System.currentTimeMillis() - start);
         Logger.d(getClass(), "Read " + data.length + " bytes [" + data.length / delta + "K/s]");
         ByteBuffer bb = ByteBuffer.wrap(data);
         createByteBuffer(bb);
@@ -96,8 +95,7 @@ public class GlbReader {
         ByteBuffer chunkSource = chunk.getBytes(mappedByteBuffer);
         destination.put(chunkSource, 0);
         if (chunk.chunkLength != destination.getByteLength()) {
-            Logger.e(getClass(), "Chunk length and glTF buffer size does not match "
-                    + (chunk.chunkLength - destination.getByteLength()) + " byte(s) more in chunk source.");
+            Logger.e(getClass(), "Chunk length and glTF buffer size does not match " + (chunk.chunkLength - destination.getByteLength()) + " byte(s) more in chunk source.");
         }
     }
 

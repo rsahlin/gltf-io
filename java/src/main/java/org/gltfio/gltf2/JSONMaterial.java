@@ -4,7 +4,7 @@ package org.gltfio.gltf2;
 import java.nio.ByteBuffer;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.gltfio.deserialize.LaddaFloatProperties;
+import org.gltfio.deserialize.Ladda.LaddaFloatProperties;
 import org.gltfio.gltf2.JSONTexture.Channel;
 import org.gltfio.gltf2.JSONTexture.NormalTextureInfo;
 import org.gltfio.gltf2.JSONTexture.TextureInfo;

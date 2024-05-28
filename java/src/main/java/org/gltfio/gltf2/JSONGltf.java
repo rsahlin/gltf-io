@@ -55,8 +55,7 @@ import com.google.gson.annotations.SerializedName;
  *
  *
  */
-public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S extends RenderableScene>
-        extends AssetBaseObject<S> implements RuntimeObject {
+public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S extends RenderableScene> extends AssetBaseObject<S> implements RuntimeObject {
 
     public static class GltfException extends Throwable {
         /**
@@ -192,8 +191,7 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
      * @param target
      * @return
      */
-    public int createBufferView(int bufferIndex, int sizeInBytes, String name, int byteOffset, int byteStride,
-            Target target) {
+    public int createBufferView(int bufferIndex, int sizeInBytes, String name, int byteOffset, int byteStride, Target target) {
         if (bufferIndex < 0 || bufferIndex >= buffers.size()) {
             throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Bufferindex: " + bufferIndex);
         }
@@ -238,8 +236,7 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
      * @param name
      * @return
      */
-    public int createAccessor(JSONBufferView bufferView, int byteOffset, ComponentType componentType, int count,
-            Type type, String name) {
+    public int createAccessor(JSONBufferView bufferView, int byteOffset, ComponentType componentType, int count, Type type, String name) {
         int bufferViewIndex = bufferViews.indexOf(bufferView);
         JSONAccessor accessor = new JSONAccessor(bufferView, bufferViewIndex, byteOffset, componentType, count, type,
                 name);

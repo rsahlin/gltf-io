@@ -22,6 +22,7 @@ import org.gltfio.gltf2.ExtensionObject;
 import org.gltfio.gltf2.Extras;
 import org.gltfio.gltf2.JSONBuffer;
 import org.gltfio.gltf2.JSONGltf;
+import org.gltfio.gltf2.JSONMaterial;
 import org.gltfio.gltf2.JSONMesh;
 import org.gltfio.gltf2.JSONNode;
 import org.gltfio.gltf2.JSONPrimitive;
@@ -45,6 +46,9 @@ import org.gltfio.lib.ErrorMessage;
 import org.gltfio.lib.FileUtils;
 import org.gltfio.lib.Logger;
 import org.gltfio.lib.Settings;
+import org.gltfio.lib.Settings.BooleanProperty;
+import org.gltfio.lib.Settings.FloatProperty;
+import org.gltfio.lib.Settings.StringProperty;
 import org.gltfio.lighting.IrradianceMap;
 import org.gltfio.lighting.IrradianceMap.IRMAP;
 import org.gltfio.prepare.GltfSettings;
@@ -59,6 +63,158 @@ import com.google.gson.GsonBuilder;
  *
  */
 public class Ladda {
+
+    public enum LaddaBooleanProperties implements BooleanProperty {
+        SELECT_RUNTIME_CAMERA("gltf.runtimecamera", true);
+
+        private final String key;
+        private final boolean defaultValue;
+
+        LaddaBooleanProperties(String key, boolean defaultValue) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+        }
+
+        @Override
+        public String getName() {
+            return this.name();
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+
+        @Override
+        public String getDefault() {
+            return Boolean.toString(defaultValue);
+        }
+
+    }
+
+    public enum LaddaProperties implements StringProperty {
+
+        /**
+         * If no environmentmap specified in the glTF this can be used to load an environmentmap
+         */
+        ENVIRONMENTMAP("gltf.environmentmap", null),
+        /**
+         * If no irradiancemap is specified in the gltf, then the default will be added
+         */
+        IRRADIANCEMAP("gltf.irradiancemap", null),
+        /**
+         * Environment map background
+         */
+        ENVMAP_BACKGROUND("gltf.background", null),
+        /**
+         * Directional light can be specified using this, intensity can be set using 'intensity:1000'
+         */
+        DIRECTIONAL_LIGHT("gltf.directional", null),
+        /**
+         * Directional light can be specified using this, intensity can be set using 'intensity:1000'
+         */
+        DIRECTIONAL_LIGHT1("gltf.directional1", null),
+        /**
+         * Directional light can be specified using this, intensity can be set using 'intensity:1000'
+         */
+        DIRECTIONAL_LIGHT2("gltf.directional2", null),
+        /**
+         * Directional light can be specified using this, intensity can be set using 'intensity:1000'
+         */
+        DIRECTIONAL_LIGHT3("gltf.directional3", null),
+        /**
+         * Directional light can be specified using this, intensity can be set using 'intensity:1000'
+         */
+        DIRECTIONAL_LIGHT4("gltf.directional4", null),
+        /**
+         * Directional light can be specified using this, intensity can be set using 'intensity:1000'
+         */
+        DIRECTIONAL_LIGHT5("gltf.directional5", null),
+        /**
+         * Force presence of extension
+         */
+        EXTENSIONS("gltf.extensions", null),
+        /**
+         * Force pbr samplers to use min filter;
+         */
+        PBR_MINFILTER("gltf.pbr_minfilter", null),
+        /**
+         * Force pbr samplers to use mag filter;
+         */
+        PBR_MAGFILTER("gltf.pbr_magfilter", null),
+        /**
+         * Runtime camera alignment
+         */
+        CAMERA_ALIGNMENT("gltf.camera.alignment", null);
+
+        private final String key;
+        private final String defaultValue;
+
+        LaddaProperties(String key, String defaultValue) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+        }
+
+        @Override
+        public String getName() {
+            return this.name();
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+
+        @Override
+        public String getDefault() {
+            return defaultValue;
+        }
+
+    }
+
+    public enum LaddaFloatProperties implements FloatProperty {
+
+        /**
+         * Use this to set runtime camera near
+         */
+        CAMERA_NEAR("gltf.camera.near", null),
+        /**
+         * If environment map or spherical harmonics is displayed as background - this factor is used to scale intensity
+         */
+        BACKGROUND_INTENSITY_SCALE("gltf.background.intensityfactor", 1.0f),
+        /**
+         * Sets the default material absorption - not used if material uses transmission, alphablend or is a metal.
+         */
+        MATERIAL_ABSORPTION("gltf.material.absorption", JSONMaterial.DEFAULT_ABSORPTION),
+        /**
+         * The y field of view for the added runtime camera.
+         */
+        CAMERA_YFOV("gltf.camera.yfow", 0.85f);
+
+        private final String key;
+        private final String defaultValue;
+
+        LaddaFloatProperties(String key, Float defaultValue) {
+            this.key = key;
+            this.defaultValue = defaultValue != null ? Float.toString(defaultValue) : null;
+        }
+
+        @Override
+        public String getName() {
+            return name();
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+
+        @Override
+        public String getDefault() {
+            return defaultValue;
+        }
+
+    }
 
     /**
      * This interface is for projects that implement their own loader / importer
@@ -276,9 +432,7 @@ public class Ladda {
      * @throws ClassNotFoundException
      * @throws URISyntaxException
      */
-    public AssetBaseObject loadGltf(String path, String filename, ModelPreparation modelPrep,
-            GltfSettings settings)
-            throws IOException, ClassNotFoundException, URISyntaxException {
+    public AssetBaseObject loadGltf(String path, String filename, ModelPreparation modelPrep, GltfSettings settings) throws IOException, ClassNotFoundException, URISyntaxException {
         if (path == null || filename == null) {
             throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "NULL");
         }
@@ -294,7 +448,10 @@ public class Ladda {
                 JSONScene scene = (JSONScene) asset.getScene(0);
                 MinMax bounds = scene.calculateBounds();
                 if (bounds != null) {
-                    asset.addRuntimeCamera("Default camera", bounds, settings.getCameraAlignment(), Settings.getInstance().getFloat(Settings.PlatformFloatProperties.DISPLAY_ASPECT), scene);
+                    int cameraIndex = asset.addRuntimeCamera("Default camera", bounds, settings.getCameraAlignment(), Settings.getInstance().getFloat(Settings.PlatformFloatProperties.DISPLAY_ASPECT), scene);
+                    if (Settings.getInstance().getBoolean(LaddaBooleanProperties.SELECT_RUNTIME_CAMERA) || asset.getCameraCount() == 1) {
+                        asset.setSelectedCamera(cameraIndex);
+                    }
                 }
                 break;
             case GLXF:
@@ -318,9 +475,7 @@ public class Ladda {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public void loadStreamingGltf(String path, String filename, ModelPreparation modelPrep,
-            GltfSettings settings, Glb2Streamer callback) throws ClassNotFoundException, IOException,
-            URISyntaxException {
+    public void loadStreamingGltf(String path, String filename, ModelPreparation modelPrep, GltfSettings settings, Glb2Streamer callback) throws ClassNotFoundException, IOException, URISyntaxException {
         this.listener = callback;
         if (path == null || filename == null) {
             throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "NULL");
@@ -336,8 +491,7 @@ public class Ladda {
         }
     }
 
-    private void resolve(Glxf asset, ModelPreparation modelPrep, GltfSettings settings)
-            throws ClassNotFoundException, IOException, URISyntaxException {
+    private void resolve(Glxf asset, ModelPreparation modelPrep, GltfSettings settings) throws ClassNotFoundException, IOException, URISyntaxException {
         resolver.resolveTransientValues(asset);
         GlxfAssetReference[] references = asset.getAssetReferences();
         if (references != null) {
