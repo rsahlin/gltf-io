@@ -59,14 +59,16 @@ public class AttributeData {
             destination.put(buffer);
             buffer.position(bufferPos);
         } else {
-            int index = destination.position();
-            int offset = bufferPos;
+            int pos = bufferPos;
+            int limit = buffer.limit();
             for (int i = 0; i < count; i++) {
-                destination.put(index, buffer, offset, type.size);
-                index += type.size;
-                offset += stride;
+                buffer.position(pos);
+                buffer.limit(pos + type.size);
+                destination.put(buffer);
+                pos += stride;
             }
-            destination.position(index);
+            buffer.position(bufferPos);
+            buffer.limit(limit);
         }
         if (destination.position() != destPos + type.size * count) {
             throw new IllegalArgumentException();
