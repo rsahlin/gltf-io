@@ -165,7 +165,7 @@ public class VanillaCreatorCallback implements CreatorCallback {
         // createTransmissionQuads(creator, false);
         // createDielectricIOR(creator);
         // roughnessFresnelTest(creator);
-        float lightIntensity = 0.9f;
+        float lightIntensity = 0.9f / 0.04f;
         float maxWhite = 1.0f;
         fresnelReflectionTest(creator, ndfTable, lightIntensity, maxWhite);
         // fresnelReflectionTest(creator, roughnessSmallTable, lightIntensity, maxWhite);
@@ -210,6 +210,7 @@ public class VanillaCreatorCallback implements CreatorCallback {
         for (int i = 0; i < 6; i++) {
             float[] quaternion = Transform.getXYRotation(nodes[i].getJSONTranslation(), position);
             nodes[i].setJSONRotation(quaternion);
+            // creator.addExtension(i, new KHRMaterialsSpecular(0.02f));
         }
     }
 
