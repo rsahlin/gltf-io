@@ -13,6 +13,7 @@ import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
 import org.gltfio.gltf2.extensions.KHRMaterialsClearcoat;
 import org.gltfio.gltf2.extensions.KHRMaterialsEmissiveStrength;
 import org.gltfio.gltf2.extensions.KHRMaterialsIOR;
+import org.gltfio.gltf2.extensions.KHRMaterialsSpecular;
 import org.gltfio.gltf2.extensions.KHRMaterialsTransmission;
 import org.gltfio.gltf2.extensions.KHRTextureTransform;
 import org.gltfio.lib.BitFlags;
@@ -146,6 +147,11 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     private transient float absorption = 0;
     private transient TextureInfo transmissionTextureInfo;
     private transient JSONTexture transmissionTexture;
+
+    /**
+     * Specular extension
+     */
+    private transient Float specularFactor;
 
     /**
      * Clearcoat extension
@@ -325,6 +331,13 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         KHRMaterialsEmissiveStrength emissiveStrengthExtension = (KHRMaterialsEmissiveStrength) getExtension(ExtensionTypes.KHR_materials_emissive_strength);
         if (emissiveStrengthExtension != null) {
             this.emissiveStrength = Float.valueOf(emissiveStrengthExtension.getEmissiveStrength());
+        }
+    }
+
+    private void resolveSpecular() {
+        KHRMaterialsSpecular ext = (KHRMaterialsSpecular) getExtension(ExtensionTypes.KHR_materials_specular);
+        if (ext != null) {
+            this.specularFactor = ext.getSpecularFactor();
         }
     }
 
@@ -537,6 +550,15 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     }
 
     /**
+     * Returns the specular factor or null if no specular extension
+     * 
+     * @return
+     */
+    public Float getSpecularFactor() {
+        return specularFactor;
+    }
+
+    /**
      * Returns the clearcoat roughnessfactor or null if no coat layer
      * 
      * @return
@@ -589,7 +611,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         }
         values[4] = DEFAULT_METAL_IOR;
         values[5] = clearCoatIOR;
-        values[6] = 1.0f; // From specular extension
+        values[6] = specularFactor != null ? specularFactor : 1.0f;
         return values;
     }
 
@@ -609,6 +631,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      */
     protected void resolveExtensions(JSONGltf glTF) {
         resolveIOR();
+        resolveSpecular();
         resolveTransmission();
         resolveEmissiveStrength();
         resolveClearcoat();

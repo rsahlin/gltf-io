@@ -537,8 +537,7 @@ public class Ladda {
                 }
                 BACKGROUND backGround = BACKGROUND.get(set.getProperty(LaddaProperties.ENVMAP_BACKGROUND));
                 Float cubemapIntensity = set.getFloat("intensity:", environmentMap);
-                cubemap = KHREnvironmentMap.create(glTF, environmentMap == null ? null
-                        : environmentMap[0], im, cubemapIntensity != null ? cubemapIntensity : 1);
+                cubemap = KHREnvironmentMap.create(glTF, environmentMap == null ? null : environmentMap[0], im, cubemapIntensity != null ? cubemapIntensity : 1);
                 cubemapRef = KHREnvironmentMap.createReference(cubemap, backGround, 0);
                 glTF.addExtension(cubemap);
             }
@@ -588,8 +587,7 @@ public class Ladda {
                 try {
                     impl = (JSONExtension) extension.extensionClass.getDeclaredConstructor().newInstance();
                     glTF.addExtension(impl);
-                } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     Logger.d(getClass(), ErrorMessage.FAILED_WITH_ERROR.message + e);
                 }
             }

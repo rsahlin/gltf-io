@@ -8,6 +8,13 @@ import com.google.gson.annotations.SerializedName;
 
 public class KHRMaterialsSpecular extends JSONExtension {
 
+    public KHRMaterialsSpecular() {
+    }
+
+    public KHRMaterialsSpecular(float specularFactor) {
+        this.specularFactor = specularFactor;
+    }
+
     private static final String SPECULAR_FACTOR = "specularFactor";
     private static final String SPECULAR_COLOR_FACTOR = "specularColorFactor";
 
