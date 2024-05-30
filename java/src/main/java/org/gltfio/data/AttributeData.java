@@ -62,8 +62,8 @@ public class AttributeData {
             int pos = bufferPos;
             int limit = buffer.limit();
             for (int i = 0; i < count; i++) {
-                buffer.position(pos);
                 buffer.limit(pos + type.size);
+                buffer.position(pos);
                 destination.put(buffer);
                 pos += stride;
             }
