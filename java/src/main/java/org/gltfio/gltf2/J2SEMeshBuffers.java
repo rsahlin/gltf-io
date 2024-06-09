@@ -243,23 +243,28 @@ public class J2SEMeshBuffers extends MeshBuffers {
             long start = System.currentTimeMillis();
             for (int i = 0; i < primitiveList.size(); i++) {
                 JSONPrimitive primitive = primitiveList.get(i);
-                NormalTextureInfo normalInfo = primitive.getMaterial().getNormalTextureInfo();
-                if (normalInfo != null) {
-                    if (recalc | primitive.getAccessor(Attributes.TANGENT) == null) {
-                        JSONAccessor normal = primitive.getAccessor(Attributes.NORMAL);
-                        if (primitive.getAccessor(Attributes.TANGENT) == null) {
-                            Logger.d(getClass(), "Creating tangents for primitive with NORMAL but no TANGENT, bufferview index: " + normal.getBufferViewIndex() + ", for " + normal.getCount() + " vertices");
-                        } else {
-                            Logger.d(getClass(), "Recalculating tangents for primitive - NORMAL bufferview index: " + normal.getBufferViewIndex() + ", for " + normal.getCount() + " vertices");
+                if (primitive.getMaterial().hasNormalTexture()) {
+                    NormalTextureInfo normalInfo = primitive.getMaterial().getNormalTextureInfo();
+                    if (normalInfo == null) {
+                        normalInfo = primitive.getMaterial().clearcoatNormalTextureInfo;
+                    }
+                    if (normalInfo != null) {
+                        if (recalc | primitive.getAccessor(Attributes.TANGENT) == null) {
+                            JSONAccessor normal = primitive.getAccessor(Attributes.NORMAL);
+                            if (primitive.getAccessor(Attributes.TANGENT) == null) {
+                                Logger.d(getClass(), "Creating tangents for primitive with NORMAL but no TANGENT, bufferview index: " + normal.getBufferViewIndex() + ", for " + normal.getCount() + " vertices");
+                            } else {
+                                Logger.d(getClass(), "Recalculating tangents for primitive - NORMAL bufferview index: " + normal.getBufferViewIndex() + ", for " + normal.getCount() + " vertices");
+                            }
+                            OutputData output = outputTangents.get(normal);
+                            if (output == null) {
+                                output = new OutputData(normal, JSONAccessor.TANGENT_TYPE);
+                                outputTangents.put(normal, output);
+                            }
+                            PrimitiveBuffer primitiveBuffer = getPrimitiveBuffer(primitive);
+                            output.addPrimitiveBuffer(primitiveBuffer);
+                            primitiveBuffer.buildTangents(normalInfo.getTexCoord(), output.outputData);
                         }
-                        OutputData output = outputTangents.get(normal);
-                        if (output == null) {
-                            output = new OutputData(normal, JSONAccessor.TANGENT_TYPE);
-                            outputTangents.put(normal, output);
-                        }
-                        PrimitiveBuffer primitiveBuffer = getPrimitiveBuffer(primitive);
-                        output.addPrimitiveBuffer(primitiveBuffer);
-                        primitiveBuffer.buildTangents(normalInfo.getTexCoord(), output.outputData);
                     }
                 }
             }

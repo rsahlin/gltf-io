@@ -571,7 +571,10 @@ public abstract class JSONGltf<P extends JSONPrimitive, M extends JSONMesh<P>, S
      * @return
      */
     public JSONSampler getSampler(@NonNull JSONTexture texture) {
-        return (texture.getSamplerIndex() >= 0) ? samplers.get(texture.getSamplerIndex()) : new JSONSampler();
+        if (texture != null) {
+            return (texture.getSamplerIndex() >= 0) ? samplers.get(texture.getSamplerIndex()) : new JSONSampler();
+        }
+        return null;
     }
 
     /**

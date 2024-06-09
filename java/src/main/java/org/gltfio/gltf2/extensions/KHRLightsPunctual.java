@@ -103,15 +103,16 @@ public class KHRLightsPunctual extends JSONExtension {
         }
 
         /**
-         * Creates a new directional light
+         * Creates a new punctual light
          * 
          * @param color
          * @param intensity
+         * @param type
          */
-        public Light(float[] color, float intensity) {
+        public Light(float[] color, float intensity, Type type) {
             System.arraycopy(color, 0, rgb, 0, rgb.length);
             this.intensity = intensity;
-            this.type = Light.Type.directional;
+            this.type = type;
         }
 
         protected static final String COLOR = "color";

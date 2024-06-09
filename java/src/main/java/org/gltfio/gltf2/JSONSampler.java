@@ -22,6 +22,27 @@ import com.google.gson.annotations.SerializedName;
  */
 public class JSONSampler extends NamedValue {
 
+    public enum Filter {
+        NEAREST(9728),
+        LINEAR(9729);
+
+        public final int value;
+
+        Filter(int value) {
+            this.value = value;
+        }
+
+        public static Filter get(int value) {
+            for (Filter f : Filter.values()) {
+                if (f.value == value) {
+                    return f;
+                }
+            }
+            return null;
+        }
+
+    }
+
     private static final String MAG_FILTER = "magFilter";
     private static final String MIN_FILTER = "minFilter";
     private static final String WRAP_S = "wrapS";

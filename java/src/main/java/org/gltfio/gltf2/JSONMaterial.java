@@ -100,7 +100,8 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     public enum AlphaMode {
         OPAQUE((byte) 1),
         MASK((byte) 2),
-        BLEND((byte) 3);
+        BLEND((byte) 3),
+        TRANSMISSION((byte) 4);
 
         public final byte value;
 
@@ -143,7 +144,8 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     /**
      * Resolved by calling resolveIOR();
      */
-    private transient float ior;
+    private transient float ior = DEFAULT_IOR;
+    private transient float metalIOR = DEFAULT_METAL_IOR;
     private transient float absorption = 0;
     private transient TextureInfo transmissionTextureInfo;
     private transient JSONTexture transmissionTexture;
@@ -222,6 +224,15 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      */
     public NormalTextureInfo getNormalTextureInfo() {
         return normalTextureInfo;
+    }
+
+    /**
+     * Returns true if the material has a normaltexture or a clearcoatnormaltexture
+     * 
+     * @return
+     */
+    public boolean hasNormalTexture() {
+        return (normalTextureInfo != null) | (clearcoatNormalTextureInfo != null);
     }
 
     /**
@@ -345,16 +356,13 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         KHRMaterialsIOR ext = (KHRMaterialsIOR) getExtension(ExtensionTypes.KHR_materials_ior);
         if (ext != null) {
             this.ior = ext.getIOR();
-        } else {
-            this.ior = (DEFAULT_METAL_IOR * pbrMetallicRoughness.metallicFactor) + (DEFAULT_IOR * (1.0f - pbrMetallicRoughness.metallicFactor));
         }
     }
 
     private void resolveTransmission() {
         KHRMaterialsTransmission transmission = (KHRMaterialsTransmission) getExtension(ExtensionTypes.KHR_materials_transmission);
         if (transmission != null) {
-            // Todo - use some other method to flag that transmission should be used
-            alphaMode = AlphaMode.BLEND;
+            alphaMode = AlphaMode.TRANSMISSION;
             absorption = 1.0f - transmission.getTransmissionFactor();
             transmissionTextureInfo = transmission.getTransmissionTexture();
         } else {
@@ -586,32 +594,36 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     }
 
     /**
-     * absorbfactor
-     * coatfactor
-     * coatroughness
-     * coat R0
-     * metal ior
-     * clearcoat ior
-     * reflective factor
      * 
      * @return
      */
-    public float[] getProperties() {
+    public float[] getProperties(float environmentIOR) {
         float[] values = new float[8];
         values[0] = absorption;
         values[1] = clearcoatFactor != null ? clearcoatFactor : 0;
         values[2] = clearcoatRoughnessFactor != null ? clearcoatRoughnessFactor : 0;
-        values[3] = 0.0f;
+        values[3] = specularFactor != null ? specularFactor : 1.0f;
+
+        values[4] = 0.0f; // coat metal F0 - ie the metal under the coat layer
+        values[5] = 0.0f; // coat dielectric F0 - ie the dielectric under the coat layer
         if (clearcoatFactor != null) {
-            // TODO - this does not work if rm texturemap is used, in that case roughness and metal will be 1.0 and modulated by texture.
-            float diff = Math.abs(ior - clearCoatIOR);
+            float diff = Math.abs(metalIOR - clearCoatIOR);
             if (diff != 0) {
-                values[3] = (float) Math.pow(diff / (ior + clearCoatIOR), 2);
+                values[4] = (float) Math.pow(diff / (metalIOR + clearCoatIOR), 2);
             }
+            diff = Math.abs(ior - clearCoatIOR);
+            if (diff != 0) {
+                values[5] = (float) Math.pow(diff / (ior + clearCoatIOR), 2);
+            }
+            float fresnelPower = (environmentIOR - clearCoatIOR) / (environmentIOR + clearCoatIOR);
+            values[6] = fresnelPower * fresnelPower;
+            values[7] = fresnelPower * fresnelPower;
+        } else {
+            float fresnelPower = (environmentIOR - metalIOR) / (environmentIOR + metalIOR);
+            values[6] = fresnelPower * fresnelPower;
+            fresnelPower = (environmentIOR - ior) / (environmentIOR + ior);
+            values[7] = fresnelPower * fresnelPower;
         }
-        values[4] = DEFAULT_METAL_IOR;
-        values[5] = clearCoatIOR;
-        values[6] = specularFactor != null ? specularFactor : 1.0f;
         return values;
     }
 

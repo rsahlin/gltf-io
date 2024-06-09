@@ -443,9 +443,8 @@ public abstract class AssetBaseObject<S extends RenderableScene> extends BaseObj
      * @param type
      * @param data
      */
-    public void addLight(JSONScene scene, JSONNode parent, float[] color, float intensity, Light.Type type,
-            float... data) {
-        Light light = new Light(color, intensity);
+    public void addLight(JSONScene scene, JSONNode parent, float[] color, float intensity, Light.Type type, float... data) {
+        Light light = new Light(color, intensity, type);
         KHRLightsPunctual lights = (KHRLightsPunctual) getExtension(ExtensionTypes.KHR_lights_punctual);
         if (lights == null) {
             // Create light extension and add to root.

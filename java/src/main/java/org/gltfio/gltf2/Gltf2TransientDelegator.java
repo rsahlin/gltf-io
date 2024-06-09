@@ -3,6 +3,7 @@ package org.gltfio.gltf2;
 
 import java.util.ArrayList;
 
+import org.gltfio.gltf2.JSONSampler.Filter;
 import org.gltfio.gltf2.JSONTexture.Channel;
 import org.gltfio.gltf2.JSONTexture.TextureInfo;
 
@@ -18,6 +19,11 @@ import org.gltfio.gltf2.JSONTexture.TextureInfo;
  * This class shall not be used directly.
  */
 public class Gltf2TransientDelegator {
+
+    /**
+     * If true then normal textures are forced to use filter mode nearest
+     */
+    private boolean forceNormalTextureMagFilter = false;
 
     private static Gltf2TransientDelegator delegator = null;
 
@@ -116,12 +122,32 @@ public class Gltf2TransientDelegator {
                 mr.metallicRoughnessTextureInfo = null;
             }
         }
-
+        resolveNormalMagFilter(glTF, material);
         /**
          * Set channels value last
          */
         material.setTextureChannelsValue();
 
+    }
+
+    private void resolveNormalMagFilter(JSONGltf glTF, JSONMaterial material) {
+        if (forceNormalTextureMagFilter) {
+            // Check for normal map mag filter
+            JSONSampler sampler = glTF.getSampler(material.getNormalTexture());
+            if (sampler != null) {
+                Filter magFilter = Filter.get(sampler.getMagFilter());
+                switch (magFilter) {
+                    case NEAREST:
+                        break;
+                    case LINEAR:
+                        JSONSampler s = new JSONSampler(sampler, "NEAREST magFilter");
+                        s.setMagFilter(Filter.NEAREST.value);
+                        JSONTexture t = glTF.getTexture(material.getNormalTextureInfo());
+                        int index = glTF.addSampler(s, t);
+                        break;
+                }
+            }
+        }
     }
 
     private void resolveTransient(JSONGltf glTF, JSONPBRMetallicRoughness pbr) {

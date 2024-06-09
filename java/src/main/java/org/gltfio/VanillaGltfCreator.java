@@ -324,13 +324,22 @@ public class VanillaGltfCreator implements GltfAssetCreator {
      * @param lightIntensity
      * @return
      */
-    public int createLight(int sceneIndex, String nodeName, float[] lightPosition, float[] lightColor, float lightIntensity) {
+    public int createLight(int sceneIndex, String nodeName, float[] lightPosition, float[] lightColor, float lightIntensity, Light.Type type) {
         int lightIndex = createNode(nodeName, -1, null, null, null);
         JSONNode<JSONMesh<?>> lightNode = getNode(lightIndex);
         lightNode.setTransform();
-        KHRLightsPunctual.setNodeRotation(lightNode, lightPosition);
-        addLight(sceneIndex, lightIndex, Light.Type.directional, lightColor, lightIntensity);
-        lightNode.setJSONRotation(lightNode.getTransform().getRotation());
+        addLight(sceneIndex, lightIndex, type, lightColor, lightIntensity);
+        switch (type) {
+            case directional:
+                KHRLightsPunctual.setNodeRotation(lightNode, lightPosition);
+                break;
+            case point:
+                lightNode.getTransform().setTranslate(lightPosition);
+                break;
+            default:
+                throw new IllegalArgumentException(type.name());
+        }
+        lightNode.setJSONTRS(lightNode.getTransform());
         return lightIndex;
     }
 
