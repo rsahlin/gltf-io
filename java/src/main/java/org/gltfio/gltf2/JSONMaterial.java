@@ -594,35 +594,34 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     }
 
     /**
+     * Layer 0 Baselayer : absorption, reflectionFactor (specular)
+     * Layer 1 Clearcoat : coat roughness, coat factor
+     * LayerFresnel 0: dielectric F0, metal F0,
+     * LayerFresnel 1: F0, coat/material dielectric F0, coat/material metal F0
+     * 
      * 
      * @return
      */
     public float[] getProperties(float environmentIOR) {
-        float[] values = new float[8];
+        // Layer 0
+        float[] values = new float[16];
         values[0] = absorption;
-        values[1] = clearcoatFactor != null ? clearcoatFactor : 0;
-        values[2] = clearcoatRoughnessFactor != null ? clearcoatRoughnessFactor : 0;
-        values[3] = specularFactor != null ? specularFactor : 1.0f;
+        values[1] = specularFactor != null ? specularFactor : 1.0f;
+        float fresnelPower = (environmentIOR - ior) / (environmentIOR + ior);
+        values[8] = fresnelPower * fresnelPower;
+        fresnelPower = (environmentIOR - metalIOR) / (environmentIOR + metalIOR);
+        values[9] = fresnelPower * fresnelPower;
 
-        values[4] = 0.0f; // coat metal F0 - ie the metal under the coat layer
-        values[5] = 0.0f; // coat dielectric F0 - ie the dielectric under the coat layer
+        // Layer 0
+        values[4] = clearcoatRoughnessFactor != null ? clearcoatRoughnessFactor : 0;
+        values[5] = clearcoatFactor != null ? clearcoatFactor : 0;
         if (clearcoatFactor != null) {
-            float diff = Math.abs(metalIOR - clearCoatIOR);
-            if (diff != 0) {
-                values[4] = (float) Math.pow(diff / (metalIOR + clearCoatIOR), 2);
-            }
-            diff = Math.abs(ior - clearCoatIOR);
-            if (diff != 0) {
-                values[5] = (float) Math.pow(diff / (ior + clearCoatIOR), 2);
-            }
-            float fresnelPower = (environmentIOR - clearCoatIOR) / (environmentIOR + clearCoatIOR);
-            values[6] = fresnelPower * fresnelPower;
-            values[7] = fresnelPower * fresnelPower;
-        } else {
-            float fresnelPower = (environmentIOR - metalIOR) / (environmentIOR + metalIOR);
-            values[6] = fresnelPower * fresnelPower;
-            fresnelPower = (environmentIOR - ior) / (environmentIOR + ior);
-            values[7] = fresnelPower * fresnelPower;
+            fresnelPower = (environmentIOR - clearCoatIOR) / (environmentIOR + clearCoatIOR);
+            values[12] = fresnelPower * fresnelPower;
+            float diff = Math.abs(ior - clearCoatIOR);
+            values[13] = diff != 0.0f ? (float) Math.pow(diff / (ior + clearCoatIOR), 2) : 0.0f;
+            diff = Math.abs(metalIOR - clearCoatIOR);
+            values[14] = diff != 0.0f ? (float) Math.pow(diff / (metalIOR + clearCoatIOR), 2) : 0.0f;
         }
         return values;
     }
