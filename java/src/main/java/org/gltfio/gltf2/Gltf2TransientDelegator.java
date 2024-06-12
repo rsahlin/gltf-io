@@ -108,9 +108,6 @@ public class Gltf2TransientDelegator {
         material.normalTexture = getTextureRef(glTF, material.getNormalTextureInfo(), Channel.NORMAL);
         material.occlusionTexture = getTextureRef(glTF, material.getOcclusionTextureInfo(), Channel.OCCLUSION);
         material.emissiveTexture = getTextureRef(glTF, material.getEmissiveTextureInfo(), Channel.EMISSIVE);
-        material.clearcoatTexture = getTextureRef(glTF, material.clearcoatTextureInfo, Channel.COAT_FACTOR);
-        material.clearcoatNormalTexture = getTextureRef(glTF, material.clearcoatNormalTextureInfo, Channel.COAT_NORMAL);
-        material.clearcoatRoughnessTexture = getTextureRef(glTF, material.clearcoatRoughnessTextureInfo, Channel.COAT_ROUGHNESS);
         if (material.occlusionTexture != null && mr != null && mr.metallicRoughnessTexture != null) {
             // Check if texture is ORM
             if (material.occlusionTextureInfo.isSame(mr.metallicRoughnessTextureInfo)) {

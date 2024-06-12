@@ -39,7 +39,9 @@ public class JSONTexture extends NamedValue {
         TRANSMISSION(64, "TR"),
         COAT_ROUGHNESS(128, "CR"),
         COAT_NORMAL(256, "CN"),
-        COAT_FACTOR(512, "CF");
+        COAT_FACTOR(512, "CF"),
+        SCATTERED_TRANSMISSION(1024, "ST"),
+        SCATTERED_TRANSMISSION_COLOR(2048, "STC");
 
         public final int value;
         public final String id;

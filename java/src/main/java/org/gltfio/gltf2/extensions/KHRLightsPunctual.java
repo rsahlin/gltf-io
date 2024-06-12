@@ -259,13 +259,13 @@ public class KHRLightsPunctual extends JSONExtension {
      */
     public static void setNodeRotation(JSONNode node, float[] position) {
         float xAxisAngle = Math.abs(Vec2.getAngle(position[2], position[1]));
-        if (xAxisAngle != 0.0f) {
-            xAxisAngle = position[2] < 0.0f ? xAxisAngle + (float) (Math.PI / 2) : xAxisAngle;
+        if (position[1] != 0.0f) {
+            xAxisAngle = position[2] < 0.0f ? xAxisAngle + (float) (Math.PI) : xAxisAngle;
             xAxisAngle = position[1] < 0.0f ? -xAxisAngle : xAxisAngle;
         }
         float yAxisAngle = Math.abs(Vec2.getAngle(position[2], position[0]));
-        if (yAxisAngle != 0.0f) {
-            yAxisAngle = position[2] < 0.0f ? yAxisAngle + (float) (Math.PI / 2) : yAxisAngle;
+        if (position[0] != 0.0f) {
+            yAxisAngle = position[2] < 0.0f ? yAxisAngle + (float) (Math.PI) : yAxisAngle;
             yAxisAngle = position[0] < 0.0f ? -yAxisAngle : yAxisAngle;
         }
         float[] quat = new float[4];

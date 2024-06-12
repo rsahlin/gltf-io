@@ -11,6 +11,7 @@ import org.gltfio.gltf2.JSONTexture.TextureInfo;
 import org.gltfio.gltf2.extensions.GltfExtensions;
 import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
 import org.gltfio.gltf2.extensions.KHRMaterialsClearcoat;
+import org.gltfio.gltf2.extensions.KHRMaterialsDiffuseTransmission;
 import org.gltfio.gltf2.extensions.KHRMaterialsEmissiveStrength;
 import org.gltfio.gltf2.extensions.KHRMaterialsIOR;
 import org.gltfio.gltf2.extensions.KHRMaterialsSpecular;
@@ -88,7 +89,7 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     private static final String ALPHA_CUTOFF = "alphaCutoff";
     private static final String DOUBLE_SIDED = "doubleSided";
 
-    public static final int PBR_TEXTURE_COUNT = 9;
+    public static final int PBR_TEXTURE_COUNT = 11;
 
     /**
      * Number of bytes used for sampler data
@@ -167,6 +168,16 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     transient JSONTexture clearcoatTexture;
     transient TextureInfo clearcoatRoughnessTextureInfo;
     transient JSONTexture clearcoatRoughnessTexture;
+
+    /**
+     * DiffuseTransmission extension
+     */
+    private transient Float diffuseTransmissionFactor;
+    private transient TextureInfo diffuseTransmissionTextureInfo;
+    private transient JSONTexture diffuseTransmissionTexture;
+    private transient float[] diffuseTransmissionColorFactor;
+    private transient TextureInfo diffuseTransmissionColorTextureInfo;
+    private transient JSONTexture diffuseTransmissionColorTexture;
 
     /**
      * Resolved textures
@@ -359,22 +370,24 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
         }
     }
 
-    private void resolveTransmission() {
+    private void resolveTransmission(JSONGltf glTF) {
         KHRMaterialsTransmission transmission = (KHRMaterialsTransmission) getExtension(ExtensionTypes.KHR_materials_transmission);
         if (transmission != null) {
             alphaMode = AlphaMode.TRANSMISSION;
             absorption = 1.0f - transmission.getTransmissionFactor();
             transmissionTextureInfo = transmission.getTransmissionTexture();
-        } else {
-            if (alphaMode == AlphaMode.BLEND) {
-                absorption = pbrMetallicRoughness.getBaseColorFactor()[3];
-            } else {
-                absorption = Settings.getInstance().getFloat(LaddaFloatProperties.MATERIAL_ABSORPTION);
-            }
         }
+        KHRMaterialsDiffuseTransmission scatterTransmission = (KHRMaterialsDiffuseTransmission) getExtension(ExtensionTypes.KHR_materials_diffuse_transmission);
+        if (scatterTransmission != null) {
+            absorption = scatterTransmission.getDiffuseTransmissionFactor();
+        } else {
+            absorption = Settings.getInstance().getFloat(LaddaFloatProperties.MATERIAL_ABSORPTION);
+        }
+        checkTextureExtension(transmissionTextureInfo, glTF.getGltfExtensions());
+        transmissionTexture = getTextureRef(glTF, clearcoatRoughnessTextureInfo, Channel.TRANSMISSION);
     }
 
-    private void resolveClearcoat() {
+    private void resolveClearcoat(JSONGltf glTF) {
         KHRMaterialsClearcoat clearcoat = (KHRMaterialsClearcoat) getExtension(ExtensionTypes.KHR_materials_clearcoat);
         if (clearcoat != null) {
             this.clearcoatFactor = clearcoat.getClearcoatFactor();
@@ -382,8 +395,37 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
             this.clearcoatNormalTextureInfo = clearcoat.getClearCoatNormalTexture();
             this.clearcoatRoughnessTextureInfo = clearcoat.getClearCoatRoughnessTexture();
             this.clearcoatTextureInfo = clearcoat.getClearCoatTexture();
-
+            checkTextureExtension(clearcoatTextureInfo, glTF.getGltfExtensions());
+            checkTextureExtension(clearcoatNormalTextureInfo, glTF.getGltfExtensions());
+            checkTextureExtension(clearcoatRoughnessTextureInfo, glTF.getGltfExtensions());
+            clearcoatTexture = getTextureRef(glTF, clearcoatTextureInfo, Channel.COAT_FACTOR);
+            clearcoatNormalTexture = getTextureRef(glTF, clearcoatNormalTextureInfo, Channel.COAT_NORMAL);
+            clearcoatRoughnessTexture = getTextureRef(glTF, clearcoatRoughnessTextureInfo, Channel.COAT_ROUGHNESS);
         }
+    }
+
+    private JSONTexture getTextureRef(JSONGltf glTF, TextureInfo textureInfo, JSONTexture.Channel channel) {
+        if (textureInfo != null) {
+            JSONTexture texture = glTF.getTexture(textureInfo);
+            texture.addChannel(channel);
+            glTF.getImage(texture.getSourceIndex()).addChannel(channel);
+            return texture;
+        }
+        return null;
+    }
+
+    private void resolveDiffuseTransmission(JSONGltf glTF) {
+        KHRMaterialsDiffuseTransmission transmit = (KHRMaterialsDiffuseTransmission) getExtension(ExtensionTypes.KHR_materials_diffuse_transmission);
+        if (transmit != null) {
+            this.diffuseTransmissionFactor = transmit.getDiffuseTransmissionFactor();
+            this.diffuseTransmissionColorFactor = transmit.getDiffuseTransmissionColorFactor();
+            this.diffuseTransmissionTextureInfo = transmit.getDiffuseTransmissionTexture();
+            this.diffuseTransmissionColorTextureInfo = transmit.getDiffuseTransmissionColorTexture();
+        }
+        checkTextureExtension(diffuseTransmissionTextureInfo, glTF.getGltfExtensions());
+        checkTextureExtension(diffuseTransmissionColorTextureInfo, glTF.getGltfExtensions());
+        diffuseTransmissionTexture = getTextureRef(glTF, diffuseTransmissionTextureInfo, Channel.SCATTERED_TRANSMISSION);
+        diffuseTransmissionColorTexture = getTextureRef(glTF, diffuseTransmissionColorTextureInfo, Channel.SCATTERED_TRANSMISSION_COLOR);
     }
 
     /**
@@ -459,6 +501,10 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
                 return clearcoatRoughnessTextureInfo;
             case ORM:
                 return ormTextureInfo;
+            case SCATTERED_TRANSMISSION:
+                return diffuseTransmissionTextureInfo;
+            case SCATTERED_TRANSMISSION_COLOR:
+                return diffuseTransmissionColorTextureInfo;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + channel);
         }
@@ -492,6 +538,10 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
                 return clearcoatRoughnessTexture;
             case ORM:
                 return ormTexture;
+            case SCATTERED_TRANSMISSION:
+                return diffuseTransmissionTexture;
+            case SCATTERED_TRANSMISSION_COLOR:
+                return diffuseTransmissionColorTexture;
             default:
                 throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + channel);
         }
@@ -549,6 +599,24 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     }
 
     /**
+     * Returns the scattered transmission factor, or null
+     * 
+     * @return
+     */
+    public Float getScatteredTransmissionFactor() {
+        return diffuseTransmissionFactor;
+    }
+
+    /**
+     * Returns the scattered transmission color, or null
+     * 
+     * @return
+     */
+    public float[] getScatteredTransmissionColor() {
+        return diffuseTransmissionColorFactor;
+    }
+
+    /**
      * Returns the clearcoatfactor or null if no coat layer
      * 
      * @return
@@ -594,23 +662,28 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
     }
 
     /**
-     * Layer 0 Baselayer : absorption, reflectionFactor (specular)
+     * Layer 0 Baselayer : transmissioncolor, absorption
      * Layer 1 Clearcoat : coat roughness, coat factor
-     * LayerFresnel 0: dielectric F0, metal F0,
+     * LayerFresnel 0: dielectric F0, metal F0, reflectionFactor (specular)
      * LayerFresnel 1: F0, coat/material dielectric F0, coat/material metal F0
      * 
      * 
      * @return
      */
-    public float[] getProperties(float environmentIOR) {
+    public float[] getLayers(float environmentIOR) {
         // Layer 0
         float[] values = new float[16];
-        values[0] = absorption;
-        values[1] = specularFactor != null ? specularFactor : 1.0f;
+        if (diffuseTransmissionColorFactor != null) {
+            values[0] = diffuseTransmissionColorFactor[0];
+            values[1] = diffuseTransmissionColorFactor[1];
+            values[2] = diffuseTransmissionColorFactor[2];
+        }
+        values[3] = absorption;
         float fresnelPower = (environmentIOR - ior) / (environmentIOR + ior);
         values[8] = fresnelPower * fresnelPower;
         fresnelPower = (environmentIOR - metalIOR) / (environmentIOR + metalIOR);
         values[9] = fresnelPower * fresnelPower;
+        values[10] = specularFactor != null ? specularFactor : 1.0f;
 
         // Layer 0
         values[4] = clearcoatRoughnessFactor != null ? clearcoatRoughnessFactor : 0;
@@ -641,21 +714,18 @@ public class JSONMaterial extends NamedValue implements RuntimeObject {
      * 
      */
     protected void resolveExtensions(JSONGltf glTF) {
+        GltfExtensions extensions = glTF.getGltfExtensions();
         resolveIOR();
         resolveSpecular();
-        resolveTransmission();
+        resolveTransmission(glTF);
         resolveEmissiveStrength();
-        resolveClearcoat();
+        resolveClearcoat(glTF);
+        resolveDiffuseTransmission(glTF);
 
         // Resolves any use of texture transform
-        GltfExtensions extensions = glTF.getGltfExtensions();
         checkTextureExtension(getNormalTextureInfo(), extensions);
         checkTextureExtension(getEmissiveTextureInfo(), extensions);
         checkTextureExtension(getOcclusionTextureInfo(), extensions);
-        checkTextureExtension(transmissionTextureInfo, extensions);
-        checkTextureExtension(clearcoatTextureInfo, extensions);
-        checkTextureExtension(clearcoatNormalTextureInfo, extensions);
-        checkTextureExtension(clearcoatRoughnessTextureInfo, extensions);
         if (getPbrMetallicRoughness() != null) {
             checkTextureExtension(getPbrMetallicRoughness().getBaseColorTextureInfo(), extensions);
             checkTextureExtension(getPbrMetallicRoughness().getMetallicRoughnessTextureInfo(), extensions);
