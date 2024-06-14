@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import org.gltfio.gltf2.JSONSampler.Filter;
 import org.gltfio.gltf2.JSONTexture.Channel;
 import org.gltfio.gltf2.JSONTexture.TextureInfo;
+import org.gltfio.gltf2.extensions.EXTTextureWebp;
+import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
 
 /**
  * This class is used to resolve transient (runtime) values in the gltf2 objects.
@@ -49,6 +51,15 @@ public class Gltf2TransientDelegator {
                 resolveTransient(glTF, bufferView);
             }
         }
+        // Resolve textures before materials - otherwise image may be null since webp is not resolved.
+        JSONTexture[] textures = glTF.getTextures();
+        if (textures != null) {
+            for (JSONTexture texture : textures) {
+                resolveTextureWebp(texture);
+                texture.setImage(glTF.getImage(texture.getSourceIndex()));
+            }
+        }
+
         ArrayList<JSONMaterial> materials = glTF.getMaterials();
         if (materials != null) {
             for (JSONMaterial material : materials) {
@@ -67,18 +78,19 @@ public class Gltf2TransientDelegator {
                 resolveTransient(glTF, mesh);
             }
         }
-        JSONTexture[] textures = glTF.getTextures();
-        if (textures != null) {
-            for (JSONTexture texture : textures) {
-                texture.setImage(glTF.getImage(texture.getSourceIndex()));
-            }
-        }
 
         ArrayList<JSONScene> scenes = glTF.getScenes();
         if (scenes != null) {
             for (JSONScene s : scenes) {
                 setNodes(glTF, s);
             }
+        }
+    }
+
+    private void resolveTextureWebp(JSONTexture texture) {
+        EXTTextureWebp webp = (EXTTextureWebp) texture.getExtension(ExtensionTypes.EXT_texture_webp);
+        if (webp != null) {
+            texture.setSourceIndex(webp);
         }
     }
 
@@ -92,8 +104,7 @@ public class Gltf2TransientDelegator {
         bufferView.setBuffer(glTF.getBuffer(bufferView));
     }
 
-    protected void resolveTransient(JSONPrimitive primitive, ArrayList<JSONAccessor> accessors,
-            JSONMaterial[] materials, int defaultMaterialIndex) {
+    protected void resolveTransient(JSONPrimitive primitive, ArrayList<JSONAccessor> accessors, JSONMaterial[] materials, int defaultMaterialIndex) {
         primitive.setAccessorRef(accessors);
         primitive.setMaterialRef(materials, defaultMaterialIndex);
         primitive.setIndicesRef(accessors);

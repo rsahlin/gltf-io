@@ -3,6 +3,7 @@ package org.gltfio.gltf2;
 
 import java.util.ArrayList;
 
+import org.gltfio.gltf2.extensions.EXTTextureWebp;
 import org.gltfio.gltf2.extensions.GltfExtensions;
 import org.gltfio.gltf2.extensions.GltfExtensions.ExtensionTypes;
 import org.gltfio.lib.BitFlag;
@@ -340,6 +341,15 @@ public class JSONTexture extends NamedValue {
      */
     public int getSourceIndex() {
         return source;
+    }
+
+    /**
+     * Sets the image source index from webp extension
+     * 
+     * @param webp
+     */
+    public void setSourceIndex(EXTTextureWebp webp) {
+        this.source = webp.getSource();
     }
 
     /**

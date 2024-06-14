@@ -34,7 +34,8 @@ public class GltfExtensions {
         KHR_materials_transmission(8, new String[] { "KHR_materials_transmission" }, KHRMaterialsTransmission.class),
         KHR_materials_clearcoat(9, new String[] { "KHR_materials_clearcoat" }, KHRMaterialsClearcoat.class),
         KHR_materials_specular(10, new String[] { "KHR_materials_specular" }, KHRMaterialsSpecular.class),
-        KHR_materials_diffuse_transmission(11, new String[] { "KHR_materials_diffuse_transmission" }, KHRMaterialsDiffuseTransmission.class);
+        KHR_materials_diffuse_transmission(11, new String[] { "KHR_materials_diffuse_transmission" }, KHRMaterialsDiffuseTransmission.class),
+        EXT_texture_webp(12, new String[] { "EXT_texture_webp" }, EXTTextureWebp.class);
 
         public final int value;
         public final List<String> names;
@@ -154,6 +155,7 @@ public class GltfExtensions {
                 case KHR_materials_clearcoat:
                 case KHR_materials_specular:
                 case KHR_materials_diffuse_transmission:
+                case EXT_texture_webp:
                     break;
                 default:
                     throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + extension);
@@ -194,6 +196,7 @@ public class GltfExtensions {
             case KHR_materials_clearcoat:
             case KHR_materials_specular:
             case KHR_materials_diffuse_transmission:
+            case EXT_texture_webp:
                 break;
             default:
                 throw new IllegalArgumentException(ErrorMessage.NOT_IMPLEMENTED.message + extension);
