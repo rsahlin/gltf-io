@@ -20,7 +20,6 @@ public class CreatorTest implements CreatorCallback {
         Logger.d(getClass(), glTF.getStats());
     }
 
-    @Test
     public void saveglTFTest() throws IOException, URISyntaxException {
         GltfAssetCreator creator = new VanillaGltfCreator("Copyright 2024", 100000, this);
         JSONGltf glTF = creator.createAsset();

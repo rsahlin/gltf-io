@@ -172,8 +172,7 @@ public class FileUtils {
                     filePath = FileUtils.getInstance().replaceDirectorySeparator(filePath);
                     int index = filePath.indexOf(targetDirectory);
                     if (index < 0) {
-                        throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Target directory '"
-                                + targetDirectory + "' not found in path: " + filePath);
+                        throw new IllegalArgumentException(ErrorMessage.INVALID_VALUE.message + "Target directory '" + targetDirectory + "' not found in path: " + filePath);
                     }
                     resourceDirectory = filePath.substring(0, index) + sourceDirectory;
                     if (!resourceDirectory.endsWith(FileUtils.DIRECTORY_SEPARATOR_STRING)) {
@@ -187,15 +186,18 @@ public class FileUtils {
     }
 
     /**
-     * Returns the filename part of the folder and fullpath
+     * Returns the filename part of the fullpath
      * 
-     * @param folder Folder source path
      * @param fullpath Full path including filename
      * @return
      */
-    public String getFilename(String folder, String fullpath) {
-        int offset = (folder != null && !folder.endsWith(DIRECTORY_SEPARATOR_STRING)) ? 1 : 0;
-        return folder != null && folder.length() > 0 ? fullpath.substring(folder.length() + offset) : fullpath;
+    public String getFilename(String fullpath) {
+        int offset = 0;
+        int temp;
+        while ((temp = fullpath.substring(offset).indexOf(DIRECTORY_SEPARATOR_STRING)) != Constants.NO_VALUE) {
+            offset = offset + temp + 1;
+        }
+        return fullpath.substring(offset);
     }
 
     /**

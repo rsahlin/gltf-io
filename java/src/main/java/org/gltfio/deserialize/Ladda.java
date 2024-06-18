@@ -320,8 +320,11 @@ public class Ladda {
      * @throws ClassNotFoundException
      * @throws URISyntaxException
      */
-    public synchronized AssetBaseObject loadJSON(String path, String filename)
-            throws IOException, ClassNotFoundException, URISyntaxException {
+    public synchronized AssetBaseObject loadJSON(String path, String filename) throws IOException, ClassNotFoundException, URISyntaxException {
+        if (path.length() == 0) {
+            path = FileUtils.getInstance().getFolder(filename) + FileUtils.DIRECTORY_SEPARATOR_STRING;
+            filename = FileUtils.getInstance().getFilename(filename);
+        }
         path = FileUtils.getInstance().replaceDirectorySeparator(path);
         AssetBaseObject asset = null;
         if (gSon == null) {
