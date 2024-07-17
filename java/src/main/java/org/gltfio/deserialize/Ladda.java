@@ -189,7 +189,7 @@ public class Ladda {
         /**
          * The y field of view for the added runtime camera.
          */
-        CAMERA_YFOV("gltf.camera.yfow", 0.85f);
+        CAMERA_YFOV("gltf.camera.yfow", 0.80f);
 
         private final String key;
         private final String defaultValue;
